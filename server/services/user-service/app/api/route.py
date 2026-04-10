@@ -56,9 +56,9 @@ async def register(
     return new_user
 
 @router.post("/login", response_model=UserResponse)
-async def login(user: UserLogin, response: Response, request: Request, db: Session = Depends(get_db)):
-    db_user = db.query(User).filter(User.email == user.email).first()
-    if not db_user or not verify_password(user.password, db_user.hashed_password):
+async def login(response: Response, request: Request, email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.email == email).first()
+    if not db_user or not verify_password(password, db_user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     
     access_token = create_access_token({"sub": db_user.email})
