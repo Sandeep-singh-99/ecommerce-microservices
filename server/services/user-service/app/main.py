@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
+from app.api.route import router as user_router
 
 load_dotenv()
 
@@ -15,6 +16,9 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-@app.get("/")
+
+app.include_router(user_router, prefix="/users", tags=["users"])
+
+@app.get("/", tags=["root"])
 def read_root():
     return {"Hello": "World"}

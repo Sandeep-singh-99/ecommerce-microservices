@@ -7,7 +7,7 @@ services:
       - "8000:8000"
     container_name: user-service
     env_file:
-      - .env
+      - ./server/.env
     
     environment:
       - PYTHONUNBUFFERED=1

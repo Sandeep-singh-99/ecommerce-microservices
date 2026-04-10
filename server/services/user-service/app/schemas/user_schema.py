@@ -1,13 +1,10 @@
-from pydantic import  BaseModel, EmailStr,Field
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
-from fastapi import UploadFile
-
 
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    full_name: str = None
-    profile_picture: UploadFile = None
+    full_name: Optional[str] = None
 
 class UserLogin(BaseModel):
     email: EmailStr
@@ -16,11 +13,11 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: str
     email: EmailStr
-    full_name: Optional[str] = None
-    profile_picture_url: Optional[str] = None
+    user_name: Optional[str] = None
+    profile_image: Optional[str] = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class UserLogout(BaseModel):
     pass
