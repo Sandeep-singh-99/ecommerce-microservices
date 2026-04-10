@@ -1,6 +1,8 @@
 import cloudinary
 import os
 from dotenv import load_dotenv
+import cloudinary.uploader
+import cloudinary.api
 
 load_dotenv()
 
@@ -13,17 +15,19 @@ cloudinary.config(
 
 
 # Upload Image
-def upload_image(file, folder: str = "fastapi_uploads"):
+async def upload_image(file, folder: str = "fastapi_uploads"):
     """
     Upload image to Cloudinary.
-    :param file: file object (UploadFile.file or open("file.png", "rb"))
+    :param file: UploadFile object
     :param folder: folder name in Cloudinary
     :return: dict with url and public_id
     """
     try:
-        result = cloudinary.uploader.upload(file, folder=folder)
+        # Read the file content
+        file_content = await file.read()
+        result = cloudinary.uploader.upload(file_content, folder=folder)
         return {
-            "url": result["secure_url"],
+            "secure_url": result["secure_url"],
             "public_id": result["public_id"]
         }
     except Exception as e:
