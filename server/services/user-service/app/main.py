@@ -27,3 +27,7 @@ app.include_router(user_router, prefix="/users", tags=["users"])
 @app.get("/", tags=["root"])
 def read_root():
     return {"Hello": "World"}
+
+@app.get("/health", tags=["health"])
+def health_check():
+    return {"status": "healthy"}
