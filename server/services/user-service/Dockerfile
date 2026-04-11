@@ -3,7 +3,8 @@ FROM python:3.13-slim AS builder
 
 WORKDIR /app
 
-COPY requirements.txt .
+# COPY requirements.txt .
+COPY services/user-service/requirements.txt .
 # RUN pip install -r requirements.txt
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 
@@ -19,7 +20,9 @@ WORKDIR /app
 
 COPY --from=builder /install /usr/local
 
-COPY . .
+# COPY . .
+COPY services/user-service/app ./app
+COPY shared ./shared
 
 EXPOSE 8000
 
