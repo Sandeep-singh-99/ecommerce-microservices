@@ -4,8 +4,8 @@ from app.db.database import get_db
 from app.schemas.user_schema import UserLogin, UserResponse, UserLogout
 from app.models.user import User
 from app.utils.utils import hash_password, verify_password, create_access_token, decode_access_token
-from app.utils.cloudinary import upload_image, delete_image
-from app.dependencies.dependencies import get_current_user
+from shared.cloudinary import upload_image, delete_image
+from shared.dependencies import get_current_user
 
 router = APIRouter()
 
