@@ -1,10 +1,10 @@
 services:
-  user-server:
+  user-service:
     build:
       context: ./server
       dockerfile: services/user-service/Dockerfile
     ports:
-      - "8000:8000"
+      - "8001:8000"
     container_name: user-service
     env_file:
       - ./server/.env
@@ -16,4 +16,23 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     # command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  
+  api-gateway:
+    build:
+      context: ./server
+      dockerfile: api-gateway/Dockerfile
+    ports:
+      - "8000:8000"
+    container_name: api-gateway
+    env_file:
+      - ./server/.env
+    environment:
+      - PYTHONUNBUFFERED=1
+      - WATCHFILES_FORCE_POLLING=true
+      - WATCHFILES_POLL_INTERVAL=0.5
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - user-service
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
