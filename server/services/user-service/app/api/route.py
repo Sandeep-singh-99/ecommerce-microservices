@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, status, Request, File, Response, Form
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from app.db.database import get_db
 from app.schemas.user_schema import UserLogin, UserResponse, UserLogout
 from app.models.user import User
@@ -40,7 +41,11 @@ async def register(
         profile_image_public_id=profile_image_public_id
     )
     db.add(new_user)
-    db.commit()
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")
     db.refresh(new_user)
 
     access_token = create_access_token(data={"sub": new_user.email})

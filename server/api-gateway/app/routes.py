@@ -12,7 +12,7 @@ async def register(
     full_name: str = Form(None),
     profile_picture: UploadFile = File(None)
 ):
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         res = await client.post(
             f"{USER_SERVICE_URL}/users/register",
             data={
@@ -30,6 +30,9 @@ async def register(
     if "set-cookie" in res.headers:
         response.headers["set-cookie"] = res.headers["set-cookie"]
 
+    if res.status_code >= 400:
+        raise HTTPException(status_code=res.status_code, detail=res.text)
+
     return res.json()
 
 
@@ -39,7 +42,7 @@ async def login(
     email: str = Form(...),
     password: str = Form(...)
 ):
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         res = await client.post(
             f"{USER_SERVICE_URL}/users/login",
             data={
@@ -51,6 +54,9 @@ async def login(
     if "set-cookie" in res.headers:
         response.headers["set-cookie"] = res.headers["set-cookie"]
 
+    if res.status_code >= 400:
+        raise HTTPException(status_code=res.status_code, detail=res.text)
+
     return res.json()
 
 
@@ -58,7 +64,7 @@ async def login(
 async def get_me(request: Request):
     cookies = request.cookies
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=30.0) as client:
         response = await client.get(
             f"{USER_SERVICE_URL}/users/me",
             cookies=cookies
