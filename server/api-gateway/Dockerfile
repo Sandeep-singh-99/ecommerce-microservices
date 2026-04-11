@@ -6,7 +6,7 @@ COPY api-gateway/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY api-gateway/app ./app
-COPY server/shared ./shared
+COPY shared ./shared
 
 # ENV PYTHONPATH=/app
 
