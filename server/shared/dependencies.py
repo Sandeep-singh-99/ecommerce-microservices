@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.models.user import User
-from app.utils.utils import decode_access_token
+from shared.security import decode_access_token
 
 def get_current_user(request: Request, db: Session = Depends(get_db)):
     token = request.cookies.get("access_token")

@@ -79,12 +79,12 @@ async def login(response: Response, request: Request, email: str = Form(...), pa
 def read_users_me(request: Request, current_user: User = Depends(get_current_user)):
     return current_user
 
-@router.post("/logout", response_model=UserLogout)
-def logout(request: Request, response: Response, current_user: User = Depends(get_current_user)):
-    response.delete_cookie(
-           key="access_token",
-           httponly=True,
-           secure=True,      
-           samesite="none"   
-    )
-    return current_user
+# @router.post("/logout", response_model=UserLogout)
+# def logout(request: Request, response: Response, current_user: User = Depends(get_current_user)):
+#     response.delete_cookie(
+#            key="access_token",
+#            httponly=True,
+#            secure=True,      
+#            samesite="none"   
+#     )
+#     return current_user
