@@ -4,19 +4,14 @@ from jose import JWTError, jwt
 import hashlib # Added for pre-hashing
 from app.config.config import JWT_SECRET_KEY, ACCESS_TOKEN_EXPIRE_DAYS
 
-# We keep bcrypt, but we will wrap the password to fix the limit
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# We keep argon2, but we will wrap the password to fix the limit
+pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    # Pre-hash with SHA256 to solve the 72-character limit.
-    # This ensures the string passed to bcrypt is always 64 chars.
-    pwd_bytes = hashlib.sha256(password.encode("utf-8")).hexdigest()
-    return pwd_context.hash(pwd_bytes)
+    return pwd_context.hash(password)
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    # Must use the same pre-hash logic to compare
-    pwd_bytes = hashlib.sha256(plain_password.encode("utf-8")).hexdigest()
-    return pwd_context.verify(pwd_bytes, hashed_password)
+    return pwd_context.verify(plain_password, hashed_password)
 
 def create_access_token(data: dict):
     # Use timezone-aware UTC to avoid deprecation warnings
