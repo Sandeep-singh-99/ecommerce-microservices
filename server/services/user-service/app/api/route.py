@@ -32,7 +32,7 @@ async def register(
     # upload image
     image_url, image_url_id = None, None
     if image:
-        result = await upload_image(image, folder="ClassBuddy")
+        result = await upload_image(image, folder="E-Commerce-Microservices")
         image_url, image_url_id = result["secure_url"], result["public_id"]
 
     # create user
@@ -101,4 +101,4 @@ def logout(request: Request, response: Response, current_user: User = Depends(ge
            secure=True,      
            samesite="none"   
     )
-    return current_user
+    return {"message": "Logged out successfully"}

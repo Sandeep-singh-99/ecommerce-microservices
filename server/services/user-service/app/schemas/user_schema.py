@@ -20,4 +20,4 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 class UserLogout(BaseModel):
-    pass
+    message: str
