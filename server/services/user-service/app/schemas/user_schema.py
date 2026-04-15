@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
+from app.models.user import userRole
 
 class UserCreate(BaseModel):
     email: EmailStr
@@ -15,6 +16,7 @@ class UserResponse(BaseModel):
     email: EmailStr
     user_name: Optional[str] = None
     profile_image: Optional[str] = None
+    role: userRole
 
     class Config:
         from_attributes = True
