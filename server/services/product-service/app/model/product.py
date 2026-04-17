@@ -21,6 +21,9 @@ class Product(base):
     # Relationship to multiple product images
     images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
 
+    # Relationship to trending products
+    trending_products = relationship("TrendingProduct", back_populates="product", cascade="all, delete-orphan")
+
 
 class ProductImage(base):
     __tablename__ = 'product_images'
@@ -35,3 +38,13 @@ class ProductImage(base):
     # Relationship back to product
     product = relationship("Product", back_populates="images")
 
+class TrendingProduct(base):
+    __tablename__ = "trending_products"
+
+    id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
+    product_id = Column(String, ForeignKey('products.id'), nullable=False, index=True)
+    created_at = Column(String, default=lambda: datetime.utcnow().isoformat())
+    updated_at = Column(String, default=lambda: datetime.utcnow().isoformat(), onupdate=lambda: datetime.utcnow().isoformat())
+
+    # Relationship back to product
+    product = relationship("Product", back_populates="trending_products")
