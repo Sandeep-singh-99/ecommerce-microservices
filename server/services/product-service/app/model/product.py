@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Float, ForeignKey
+from sqlalchemy import Column, String, Float, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 from datetime import datetime
@@ -9,20 +9,29 @@ class Product(base):
     __tablename__ = 'products'
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
-    product_name = Column(String, unique=True, index=True, nullable=False)
+    product_name = Column(String, index=True, nullable=False)
     product_brand = Column(String, nullable=False)
     product_price = Column(Float, nullable=False)
     sales_price = Column(Float, nullable=False)
     product_description = Column(String, nullable=True)
-    product_category = Column(String, nullable=False)
-    created_at = Column(String, default=lambda: datetime.utcnow().isoformat())
-    updated_at = Column(String, default=lambda: datetime.utcnow().isoformat(), onupdate=lambda: datetime.utcnow().isoformat())
-    
-    # Relationship to multiple product images
-    images = relationship("ProductImage", back_populates="product", cascade="all, delete-orphan")
+    product_category = Column(String, nullable=False, index=True)
 
-    # Relationship to trending products
-    trending_products = relationship("TrendingProduct", back_populates="product", cascade="all, delete-orphan")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    images = relationship(
+        "ProductImage",
+        back_populates="product",
+        cascade="all, delete-orphan",
+        lazy="selectin"
+    )
+
+    trending_products = relationship(
+        "TrendingProduct",
+        back_populates="product",
+        cascade="all, delete-orphan",
+        lazy="selectin"
+    )
 
 
 class ProductImage(base):
@@ -30,21 +39,24 @@ class ProductImage(base):
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
     product_id = Column(String, ForeignKey('products.id'), nullable=False, index=True)
+
     image_url = Column(String, nullable=False)
     public_id = Column(String, nullable=False)
-    is_primary = Column(String, default=lambda: 'false')  
-    created_at = Column(String, default=lambda: datetime.utcnow().isoformat())
-    
-    # Relationship back to product
+
+    is_primary = Column(Boolean, default=False)
+
+    created_at = Column(DateTime, default=datetime.utcnow)
+
     product = relationship("Product", back_populates="images")
+
 
 class TrendingProduct(base):
     __tablename__ = "trending_products"
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
     product_id = Column(String, ForeignKey('products.id'), nullable=False, index=True)
-    created_at = Column(String, default=lambda: datetime.utcnow().isoformat())
-    updated_at = Column(String, default=lambda: datetime.utcnow().isoformat(), onupdate=lambda: datetime.utcnow().isoformat())
 
-    # Relationship back to product
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
     product = relationship("Product", back_populates="trending_products")
