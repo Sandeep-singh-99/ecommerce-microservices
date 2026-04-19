@@ -1,10 +1,10 @@
 import React from 'react'
-import { ModeToggle } from './components/mode-toggle'
+import Navbar from './components/Navbar'
 
 export default function App() {
   return (
-    <div>App
-      <ModeToggle />
+    <div>
+      <Navbar />
     </div>
   )
 }
