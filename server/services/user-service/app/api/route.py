@@ -6,7 +6,7 @@ from app.schemas.user_schema import UserResponse, UserCreate, UserLogin, UserLog
 from app.models.user import User
 from app.utils.utils import hash_password, verify_password, create_access_token
 from shared.cloudinary import upload_image, delete_image
-from shared.dependencies import get_current_user
+from shared.dependencies import get_current_user, TokenData
 
 router = APIRouter()
 
@@ -89,12 +89,12 @@ def login(
 
 
 @router.get("/me", response_model=UserResponse)
-def read_users_me(request: Request, current_user: User = Depends(get_current_user)):
+def read_users_me(request: Request, current_user: TokenData = Depends(get_current_user)):
     return current_user
 
 
 @router.post("/logout", response_model=UserLogout)
-def logout(request: Request, response: Response, current_user: User = Depends(get_current_user)):
+def logout(request: Request, response: Response, current_user: TokenData = Depends(get_current_user)):
     response.delete_cookie(
            key="access_token",
            httponly=True,

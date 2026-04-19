@@ -1,1 +1,1 @@
-from dependencies.dependencies import *
+from app.dependencies.dependencies import *

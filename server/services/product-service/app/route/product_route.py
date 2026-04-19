@@ -7,7 +7,7 @@ from fastapi.concurrency import run_in_threadpool
 from app.db.database import get_db
 from app.model.product import Product, ProductImage
 from shared.cloudinary import upload_image, delete_image
-from shared.dependencies import get_current_user
+from shared.dependencies import get_current_user, TokenData
 
 router = APIRouter()
 
@@ -23,7 +23,7 @@ async def create_product(
     product_category: str = Form(...),
     images: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user: TokenData = Depends(get_current_user)
 ):
 
     # Role check

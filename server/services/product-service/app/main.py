@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.model.product import Product, ProductImage, TrendingProduct
-from app.route.product_route import product_route
+from app.route.product_route import router as product_route
 from app.db.database import engine, base
 
 app = FastAPI()
