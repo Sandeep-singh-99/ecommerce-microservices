@@ -65,3 +65,18 @@ services:
       retries: 3
       start_period: 20s
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+
+  # ============================================
+  # Client (React)
+  # ============================================
+  client:
+    build: ./client
+    container_name: e-commerce_client
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: npm run dev
+    depends_on:
+      - api-gateway
