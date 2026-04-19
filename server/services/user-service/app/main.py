@@ -7,7 +7,13 @@ from app.models.user import User
 load_dotenv()
 
 
-app = FastAPI()
+app = FastAPI(
+    title="User Service API",
+    # Tell FastAPI to host docs under the /users route
+    docs_url="/users/docs",
+    redoc_url="/users/redoc",
+    openapi_url="/users/openapi.json"
+)
 
 app.add_middleware(
     CORSMiddleware,

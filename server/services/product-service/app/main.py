@@ -4,7 +4,13 @@ from app.model.product import Product, ProductImage, TrendingProduct
 from app.route.product_route import router as product_route
 from app.db.database import engine, base
 
-app = FastAPI()
+app = FastAPI(
+    title="Product Service API",
+    # Tell FastAPI to host docs under the /api/products route
+    docs_url="/api/products/docs",
+    redoc_url="/api/products/redoc",
+    openapi_url="/api/products/openapi.json"
+)
 
 app.add_middleware(
     CORSMiddleware,
