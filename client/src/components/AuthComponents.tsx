@@ -26,8 +26,6 @@ import { Label } from "./ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Mail, Lock, User, UserCog, Loader } from "lucide-react";
 import { AxiosError } from "axios";
-// import { useAppDispatch } from "@/hooks/hooks";
-// import { checkAuth, login, register } from "@/redux/slice/authSlice";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner"
 

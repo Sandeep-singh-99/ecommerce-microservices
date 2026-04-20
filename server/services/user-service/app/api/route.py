@@ -89,8 +89,16 @@ def login(
 
 
 @router.get("/me", response_model=UserResponse)
-def read_users_me(request: Request, current_user: TokenData = Depends(get_current_user)):
-    return current_user
+def read_users_me(request: Request, current_user: TokenData = Depends(get_current_user), db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.email == current_user.email).first()
+    
+    if not db_user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="User not found in database"
+        )
+        
+    return db_user
 
 
 @router.post("/logout", response_model=UserLogout)

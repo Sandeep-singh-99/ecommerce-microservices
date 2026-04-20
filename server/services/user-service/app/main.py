@@ -10,9 +10,9 @@ load_dotenv()
 app = FastAPI(
     title="User Service API",
     # Tell FastAPI to host docs under the /users route
-    docs_url="/users/docs",
-    redoc_url="/users/redoc",
-    openapi_url="/users/openapi.json"
+    docs_url="/auth/docs",
+    redoc_url="/auth/redoc",
+    openapi_url="/auth/openapi.json"
 )
 
 app.add_middleware(
@@ -28,7 +28,7 @@ async def on_startup():
     print("Creating database tables...")
     base.metadata.create_all(bind=engine)
 
-app.include_router(user_router, prefix="/users", tags=["users"])
+app.include_router(user_router, prefix="/auth", tags=["auth"])
 
 @app.get("/", tags=["root"])
 def read_root():
