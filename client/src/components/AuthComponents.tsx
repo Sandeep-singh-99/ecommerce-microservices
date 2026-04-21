@@ -11,23 +11,14 @@ import {
   DialogTrigger,
 } from "./ui/dialog";
 
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
-import { Mail, Lock, User, UserCog, Loader } from "lucide-react";
-import { AxiosError } from "axios";
-import { useNavigate } from "react-router-dom";
-import { toast } from "sonner"
+import { Mail, Lock, User, Loader } from "lucide-react";
+import { useAppDispatch } from "@/hooks/hooks";
+import { useSignIn, useSignUp } from "@/api/authApi";
+import { toast } from "sonner";
+import { setUser } from "@/redux/slice/authSlice";
 
 interface IFormData {
   fullName: string;
@@ -40,7 +31,6 @@ interface IFormData {
 export default function AuthComponent() {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [loading, setLoading] = useState(false);
   const [uploadImage, setUploadImage] = useState<File | null>(null);
   const [formData, setFormData] = useState<IFormData>({
     fullName: "",
@@ -50,8 +40,10 @@ export default function AuthComponent() {
     imageUrl: "",
   });
 
-//   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
+  const { mutateAsync: login, isPending: isLoginLoading } = useSignIn();
+  const { mutateAsync: register, isPending: isRegisterLoading } = useSignUp();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -77,68 +69,42 @@ export default function AuthComponent() {
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
-    // e.preventDefault();
-    // if (!email || !password) {
-    //   return;
-    // }
-    // setLoading(true);
+    e.preventDefault();
 
-    // const formData = new FormData();
-    // formData.append("email", email);
-    // formData.append("password", password);
-    // try {
-    // //   const response = await dispatch(login(formData)).unwrap();
-    // //   toast.success(response.message);
-    // //   dispatch(checkAuth());
-    // } catch (error: unknown) {
-    //   const axiosError = error as AxiosError<{ detail: string }>;
-    //   const errorMessage =
-    //     axiosError.response?.data?.detail || "Invalid Credentials";
-    //   toast.error(errorMessage);
-    // } finally {
-    //   setLoading(false);
-    // }
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    const loginData = new FormData();
+    loginData.append("email", email);
+    loginData.append("password", password);
+
+    const response = await login(loginData);
+    dispatch(setUser(response));
   };
 
   const handleSignUpSubmit = async (e: React.FormEvent) => {
-    // e.preventDefault();
+    e.preventDefault();
 
-    // if (!uploadImage) {
-    //   setLoading(false);
-    //   console.error("No image uploaded");
-    //   return;
-    // }
+    if (!uploadImage) {
+      toast.error("No image uploaded");
+      return;
+    }
 
-    // if (
-    //   !formData.fullName ||
-    //   !formData.email ||
-    //   !formData.password ||
-    //   !formData.role
-    // ) {
-    //   setLoading(false);
-    //   console.error("Please fill in all fields");
-    //   return;
-    // }
+    if (!formData.fullName || !formData.email || !formData.password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
 
-    // setLoading(true);
+    const signUpData = new FormData();
+    signUpData.append("fullName", formData.fullName);
+    signUpData.append("email", formData.email);
+    signUpData.append("password", formData.password);
+    signUpData.append("imageUrl", uploadImage);
 
-    // const formDataToSend = new FormData();
-    // formDataToSend.append("full_name", formData.fullName);
-    // formDataToSend.append("email", formData.email);
-    // formDataToSend.append("password", formData.password);
-    // formDataToSend.append("role", formData.role);
-    // formDataToSend.append("image", uploadImage);
-
-    // try {
-    //   await dispatch(register(formDataToSend)).unwrap();
-    //   toast.success("Registration successful");
-    //   navigate("/t-insights");
-    // } catch (error: unknown) {
-    //   const axiosError = error as AxiosError<{ detail: string }>;
-    //   const errorMessage =
-    //     axiosError.response?.data?.detail || "Invalid Credentials";
-    //   toast.error(errorMessage);
-    // }
+    const response = await register(signUpData);
+    dispatch(setUser(response));
   };
 
   return (
@@ -164,14 +130,8 @@ export default function AuthComponent() {
         {/* Tabs */}
         <Tabs defaultValue="login" className="w-full mt-4">
           <TabsList className="grid w-full grid-cols-2 bg-muted rounded-lg p-1">
-            <TabsTrigger
-              value="login">
-              Log In
-            </TabsTrigger>
-            <TabsTrigger
-              value="signup">
-              Sign Up
-            </TabsTrigger>
+            <TabsTrigger value="login">Log In</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
 
           {/* LOGIN */}
@@ -220,11 +180,12 @@ export default function AuthComponent() {
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button
-                  type="submit"
-                  disabled={loading}>
-                  {loading && <Loader className="animate-spin text-blue-900" />}
-                  Log In
+                <Button type="submit" disabled={isLoginLoading}>
+                  {isLoginLoading ? (
+                    <Loader className="animate-spin" />
+                  ) : (
+                    "Log In"
+                  )}
                 </Button>
               </DialogFooter>
             </form>
@@ -301,44 +262,6 @@ export default function AuthComponent() {
                 </div>
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="role" className="text-foreground">
-                  Role
-                </Label>
-                <div className="relative">
-                  <UserCog className="absolute left-3 top-1/2 -translate-y-1/2 text-violet-500 w-5 h-5" />
-                  <Select
-                    value={formData.role}
-                    onValueChange={(e) =>
-                      setFormData((prev) => ({ ...prev, role: e }))
-                    }
-                  >
-                    <SelectTrigger className="w-full pl-10 bg-background border-input rounded-lg text-foreground focus:border-violet-500 focus:ring-violet-500">
-                      <SelectValue placeholder="Select a Role" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-card border-border">
-                      <SelectGroup>
-                        <SelectLabel className="text-muted-foreground">
-                          Roles
-                        </SelectLabel>
-                        <SelectItem
-                          value="student"
-                          className="text-foreground focus:bg-accent"
-                        >
-                          Student
-                        </SelectItem>
-                        <SelectItem
-                          value="teacher"
-                          className="text-foreground focus:bg-accent"
-                        >
-                          Teacher
-                        </SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
               {/* Password */}
               <div className="grid gap-2">
                 <Label htmlFor="password" className="text-foreground">
@@ -365,12 +288,7 @@ export default function AuthComponent() {
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button
-                  type="submit"
-                  disabled={loading}>
-                  {loading && <Loader className="animate-spin text-blue-900" />}
-                  Sign Up
-                </Button>
+                <Button type="submit">Sign Up</Button>
               </DialogFooter>
             </form>
           </TabsContent>

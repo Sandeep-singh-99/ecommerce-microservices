@@ -73,7 +73,11 @@ export const useAuthCheck = () => {
     return useQuery({
         queryKey: ["authCheck"],
         queryFn: async () => {
-            const response = await axiosClient.get("/auth/check");
+            const response = await axiosClient.get("/auth/check", {
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            });
             return response.data;
         }
     });
