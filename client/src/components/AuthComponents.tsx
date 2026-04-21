@@ -288,7 +288,13 @@ export default function AuthComponent() {
                     Cancel
                   </Button>
                 </DialogClose>
-                <Button type="submit">Sign Up</Button>
+                <Button type="submit" disabled={isRegisterLoading}>
+                  {isRegisterLoading ? (
+                    <Loader className="animate-spin" />
+                  ) : (
+                    "Sign Up"
+                  )}
+                </Button>
               </DialogFooter>
             </form>
           </TabsContent>

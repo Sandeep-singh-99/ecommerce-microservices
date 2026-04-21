@@ -85,7 +85,7 @@ def login(
         samesite="none"
     )
 
-    return db_user
+    return {"message": "Login successful"}
 
 
 @router.get("/me", response_model=UserResponse)
