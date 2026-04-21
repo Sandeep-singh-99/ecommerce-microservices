@@ -1,12 +1,9 @@
-interface IRole {
-    ADMIN: string;
-    USER: string;
+export interface IAuth {
+    id: string;
+    email: string;
+    password?: string;
+    user_name: string;
+    profile_image: string;
+    role: string;
 }
 
-export interface IAuth {
-    email: string;
-    password: string;
-    user_name: string;
-    image: string;
-    role?: IRole;
-}

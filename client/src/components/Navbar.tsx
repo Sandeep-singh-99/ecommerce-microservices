@@ -12,9 +12,10 @@ export default function Navbar() {
         <h1 className="text-4xl font-bold">Buyzaar</h1>
 
         <div className="flex items-center gap-4">
+          <ModeToggle />
           {user ? (
             <img
-              src={user.image}
+              src={user.profile_image}
               alt={user.user_name}
               className="w-8 h-8 rounded-full object-cover cursor-pointer"
               loading="lazy"
@@ -22,7 +23,6 @@ export default function Navbar() {
           ) : (
             <AuthComponent />
           )}
-          <ModeToggle />
         </div>
       </div>
     </nav>

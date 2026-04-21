@@ -62,7 +62,7 @@ async def register(
     return db_user
 
 
-@router.post("/login", response_model=UserResponse)
+@router.post("/login")
 def login(
     request: Request,
     response: Response,

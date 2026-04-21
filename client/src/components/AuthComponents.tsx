@@ -98,10 +98,10 @@ export default function AuthComponent() {
     }
 
     const signUpData = new FormData();
-    signUpData.append("fullName", formData.fullName);
+    signUpData.append("user_name", formData.fullName);
     signUpData.append("email", formData.email);
     signUpData.append("password", formData.password);
-    signUpData.append("imageUrl", uploadImage);
+    signUpData.append("image", uploadImage);
 
     const response = await register(signUpData);
     dispatch(setUser(response));

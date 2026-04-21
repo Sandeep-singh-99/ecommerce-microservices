@@ -42,6 +42,7 @@ export const useSignIn = () => {
         },
         onSuccess: (data) => {
             toast.success("Login successful!");
+            queryClient.invalidateQueries({ queryKey: ["authCheck"] });
         },
         onError: (error) => {
             const errorMessage = error.response?.data?.message || error.message;
@@ -73,7 +74,7 @@ export const useAuthCheck = () => {
     return useQuery({
         queryKey: ["authCheck"],
         queryFn: async () => {
-            const response = await axiosClient.get("/auth/check", {
+            const response = await axiosClient.get("/auth/me", {
                 headers: {
                     "Content-Type": "application/json",
                 }
