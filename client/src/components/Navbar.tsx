@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Search, ShoppingCart, User, LogOut, LayoutDashboard, Settings, Menu } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  LogOut,
+  LayoutDashboard,
+  Settings,
+} from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
 import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
 import { useSignOut } from "@/api/authApi";
@@ -9,7 +16,7 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Badge } from "./ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "./ui/sheet";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,60 +43,33 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 w-full z-50 bg-slate-50/80 dark:bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm transition-all h-[88px] flex flex-col justify-center">
       <div className="container mx-auto px-4 md:px-10 flex items-center justify-between">
-        
         {/* Logo & Mobile Menu */}
         <div className="flex items-center gap-4">
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="md:hidden">
-                <Menu className="h-6 w-6" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left">
-              <SheetHeader>
-                <SheetTitle className="text-left text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-500">
-                  Buyzaar
-                </SheetTitle>
-              </SheetHeader>
-              <div className="py-6 space-y-4">
-                <Link to="/" className="block py-2 text-lg font-medium hover:text-violet-500 transition-colors">Home</Link>
-                <Link to="/products" className="block py-2 text-lg font-medium hover:text-violet-500 transition-colors">Shop All</Link>
-                <Link to="/category/electronics" className="block py-2 text-lg font-medium hover:text-violet-500 transition-colors">Electronics</Link>
-                <Link to="/category/clothing" className="block py-2 text-lg font-medium hover:text-violet-500 transition-colors">Clothing</Link>
-                <Link to="/project" className="block py-2 text-lg font-medium hover:text-violet-500 transition-colors">Project Details</Link>
-              </div>
-            </SheetContent>
-          </Sheet>
-
           <Link to="/" className="flex items-center">
-            <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-500">Buyzaar</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-violet-500">
+              Buyzaar
+            </h1>
           </Link>
-
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-6 ml-8">
-            <Link to="/products" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Shop</Link>
-            <Link to="/category/electronics" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Electronics</Link>
-            <Link to="/category/clothing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Clothing</Link>
-            <Link to="/project" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors border border-border px-3 py-1 rounded-full">Project Details</Link>
-          </div>
         </div>
 
         {/* Right Actions */}
         <div className="flex items-center gap-2 sm:gap-4">
           {/* Desktop Search */}
-          <div className={`hidden md:flex items-center transition-all overflow-hidden ${isSearchOpen ? 'w-64' : 'w-10'}`}>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className={`shrink-0 z-10 ${isSearchOpen ? 'absolute' : ''}`}
+          <div
+            className={`hidden md:flex items-center transition-all overflow-hidden ${isSearchOpen ? "w-64" : "w-10"}`}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              className={`shrink-0 z-10 ${isSearchOpen ? "absolute" : ""}`}
               onClick={() => setIsSearchOpen(!isSearchOpen)}
             >
               <Search className="h-5 w-5" />
             </Button>
             {isSearchOpen && (
-              <Input 
+              <Input
                 autoFocus
-                placeholder="Search products..." 
+                placeholder="Search products..."
                 className="pl-10 h-10 w-full animate-in slide-in-from-right-4 bg-background/50"
                 onBlur={() => setIsSearchOpen(false)}
               />
@@ -112,17 +92,27 @@ export default function Navbar() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-9 w-9 rounded-full ml-1">
+                <Button
+                  variant="ghost"
+                  className="relative h-9 w-9 rounded-full ml-1"
+                >
                   <Avatar className="h-9 w-9 border border-border/50">
-                    <AvatarImage src={user.profile_image} alt={user.user_name} />
-                    <AvatarFallback>{user.user_name?.charAt(0) || "U"}</AvatarFallback>
+                    <AvatarImage
+                      src={user.profile_image}
+                      alt={user.user_name}
+                    />
+                    <AvatarFallback>
+                      {user.user_name?.charAt(0) || "U"}
+                    </AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.user_name}</p>
+                    <p className="text-sm font-medium leading-none">
+                      {user.user_name}
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
                     </p>
@@ -131,7 +121,10 @@ export default function Navbar() {
                 <DropdownMenuSeparator />
                 {user.role === "ADMIN" && (
                   <DropdownMenuItem asChild>
-                    <Link to="/admin" className="cursor-pointer flex items-center">
+                    <Link
+                      to="/admin"
+                      className="cursor-pointer flex items-center"
+                    >
                       <LayoutDashboard className="mr-2 h-4 w-4" />
                       <span>Admin Dashboard</span>
                     </Link>
@@ -146,7 +139,10 @@ export default function Navbar() {
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive" onClick={handleLogout}>
+                <DropdownMenuItem
+                  className="cursor-pointer text-destructive focus:text-destructive"
+                  onClick={handleLogout}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
@@ -157,7 +153,10 @@ export default function Navbar() {
               <Button variant="ghost" asChild className="hidden lg:flex">
                 <Link to="/login">Log In</Link>
               </Button>
-              <Button asChild className="rounded-full shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-transform">
+              <Button
+                asChild
+                className="rounded-full shadow-lg shadow-primary/20 hover:-translate-y-0.5 transition-transform"
+              >
                 <Link to="/register">Sign Up</Link>
               </Button>
             </div>
