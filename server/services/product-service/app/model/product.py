@@ -14,6 +14,7 @@ class Product(base):
     product_price = Column(Float, nullable=False)
     sales_price = Column(Float, nullable=False)
     product_description = Column(String, nullable=True)
+    product_details = Column(String, nullable=True)
     product_category = Column(String, nullable=False, index=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)
