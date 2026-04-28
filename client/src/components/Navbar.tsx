@@ -41,7 +41,7 @@ export default function Navbar() {
   const cartCount = items.reduce((total, item) => total + item.quantity, 0);
 
   return (
-    <nav className="fixed top-0 left-0 w-full z-50 bg-slate-50/80 dark:bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm transition-all h-[88px] flex flex-col justify-center">
+    <nav className="fixed top-0 left-0 w-full z-50 bg-slate-50/80 dark:bg-background/80 backdrop-blur-xl border-b border-border/50 shadow-sm transition-all h-22 flex flex-col justify-center">
       <div className="container mx-auto px-4 md:px-10 flex items-center justify-between">
         {/* Logo & Mobile Menu */}
         <div className="flex items-center gap-4">

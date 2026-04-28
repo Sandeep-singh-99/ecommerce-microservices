@@ -48,7 +48,7 @@ export default function Home() {
       </section>
 
       {/* Features Banner */}
-      <section className="py-12 bg-slate-50 dark:bg-card/50 border-b border-border">
+      <section className="py-12 bg-slate-50 dark:bg-card/50 border-b border-border flex justify-center items-center">
         <div className="container px-4 md:px-10">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="flex items-center gap-4">
@@ -83,7 +83,7 @@ export default function Home() {
       </section>
 
       {/* Category Showcase */}
-      <section className="py-20">
+      <section className="py-20 flex justify-center items-center">
         <div className="container px-4 md:px-10">
           <div className="flex justify-between items-end mb-10">
             <div>
@@ -107,7 +107,7 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-20 bg-slate-50 dark:bg-card/30">
+      <section className="py-20 bg-slate-50 dark:bg-card/30 flex justify-center items-center">
         <div className="container px-4 md:px-10">
           <div className="text-center max-w-2xl mx-auto mb-12">
             <h2 className="text-3xl font-bold mb-4">Featured Products</h2>
@@ -125,7 +125,7 @@ export default function Home() {
       </section>
 
       {/* Promo Banner */}
-      <section className="py-20">
+      <section className="py-20 flex justify-center items-center">
         <div className="container px-4 md:px-10">
           <div className="relative rounded-3xl overflow-hidden bg-primary text-primary-foreground">
             <div className="absolute inset-0 z-0">
@@ -151,7 +151,7 @@ export default function Home() {
       </section>
 
       {/* Trending Products */}
-      <section className="py-20 pb-32">
+      <section className="py-20 pb-32 flex justify-center items-center">
         <div className="container px-4 md:px-10">
           <div className="flex justify-between items-end mb-10">
             <h2 className="text-3xl font-bold">Trending Now</h2>
