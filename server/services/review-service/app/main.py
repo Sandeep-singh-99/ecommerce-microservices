@@ -22,3 +22,7 @@ async def on_startup():
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
+
+@app.get("/health", tags=["health"])
+def health_check():
+    return {"status": "healthy"}
