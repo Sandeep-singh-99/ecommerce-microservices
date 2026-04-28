@@ -2,10 +2,10 @@ from sqlalchemy import Column, String, Float, ForeignKey, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from uuid import uuid4
 from datetime import datetime
-from app.db.database import base
+from app.db.database import Base
 
 
-class Product(base):
+class Product(Base):
     __tablename__ = 'products'
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
@@ -35,7 +35,7 @@ class Product(base):
     )
 
 
-class ProductImage(base):
+class ProductImage(Base):
     __tablename__ = 'product_images'
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
@@ -51,7 +51,7 @@ class ProductImage(base):
     product = relationship("Product", back_populates="images")
 
 
-class TrendingProduct(base):
+class TrendingProduct(Base):
     __tablename__ = "trending_products"
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))

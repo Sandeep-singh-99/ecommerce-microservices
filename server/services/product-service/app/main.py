@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.model.product import Product, ProductImage, TrendingProduct
 from app.route.product_route import router as product_route
-from app.db.database import engine, base
+from app.db.database import engine, Base
 
 app = FastAPI(
     title="Product Service API",
@@ -23,7 +23,7 @@ app.add_middleware(
 @app.on_event("startup")
 async def on_startup():
     print("Creating database tables...")
-    base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=engine)
 
 app.include_router(product_route, prefix="/api/products", tags=["products"])
 

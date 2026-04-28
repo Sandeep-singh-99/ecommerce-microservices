@@ -1,14 +1,14 @@
 from sqlalchemy import Column, String, Enum
 from uuid import uuid4
 from datetime import datetime
-from app.db.database import base
+from app.db.database import Base
 import enum
 
 class userRole(str, enum.Enum):
     USER = "USER"
     ADMIN = "ADMIN"
 
-class User(base):
+class User(Base):
     __tablename__ = 'users'
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
