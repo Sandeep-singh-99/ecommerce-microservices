@@ -7,9 +7,9 @@ from app.db.database import get_db
 from app.model.product import Product, ProductImage
 from shared.cloudinary import delete_image, upload_multiple_images
 from shared.dependencies import get_current_user, TokenData
+import asyncio
 
 router = APIRouter()
-
 
 @router.post("/create-product", status_code=status.HTTP_201_CREATED)
 async def create_product(
@@ -26,11 +26,10 @@ async def create_product(
     current_user: TokenData = Depends(get_current_user)
 ):
 
-    # Role check
     if current_user.role != "ADMIN":
-        raise HTTPException(status_code=403, detail="Admin access required")
+        raise HTTPException(403, "Admin access required")
 
-    uploaded_images = []
+    uploaded_public_ids = []
 
     try:
         # Create product
@@ -45,30 +44,42 @@ async def create_product(
         )
 
         db.add(new_product)
-        db.flush()  # get product.id without commit
+        db.flush()
 
-        # Upload images
-        for index, image in enumerate(images):
-
-            # Validate file type
+        # Validate images first
+        for image in images:
             if not image.content_type.startswith("image/"):
                 raise HTTPException(400, "Only image files allowed")
 
-            # Run blocking upload safely
-            result = await run_in_threadpool(upload_multiple_images, image.file, "E-Commerce-Microservices/products")
+        # PARALLEL UPLOADS
+        upload_tasks = [
+            run_in_threadpool(
+                upload_multiple_images,
+                image.file,
+                "E-Commerce-Microservices/products"
+            )
+            for image in images
+        ]
 
-            if not result:
-                raise HTTPException(500, "Image upload failed")
+        results = await asyncio.gather(*upload_tasks, return_exceptions=True)
 
-            image_url, public_id = result["secure_url"], result["public_id"]
+        # Check for failures
+        for res in results:
+            if isinstance(res, Exception):
+                raise res
 
-            uploaded_images.append(public_id)
+        # Save images
+        for index, result in enumerate(results):
+            image_url = result["secure_url"]
+            public_id = result["public_id"]
+
+            uploaded_public_ids.append(public_id)
 
             db.add(ProductImage(
                 product_id=new_product.id,
                 image_url=image_url,
                 public_id=public_id,
-                is_primary=(index == 0)  
+                is_primary=(index == 0)
             ))
 
         db.commit()
@@ -86,11 +97,12 @@ async def create_product(
     except Exception as e:
         db.rollback()
 
-        for public_id in uploaded_images:
-            try:
-                delete_image(public_id)
-            except:
-                pass
+        # CLEANUP uploaded images if failure
+        cleanup_tasks = [
+            run_in_threadpool(delete_image, pid)
+            for pid in uploaded_public_ids
+        ]
+        await asyncio.gather(*cleanup_tasks, return_exceptions=True)
 
         raise HTTPException(500, f"Error: {str(e)}")
     
