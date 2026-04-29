@@ -29,7 +29,7 @@ async def create_product(
 
     # Role check
     if current_user.role != "ADMIN":
-        raise HTTPException(status_code=403, detail="Not allowed")
+        raise HTTPException(status_code=403, detail="Admin access required")
 
     uploaded_images = []
 
@@ -56,7 +56,8 @@ async def create_product(
                 raise HTTPException(400, "Only image files allowed")
 
             # Run blocking upload safely
-            result = await run_in_threadpool(upload_image, image.file, image.filename)
+            # result = await run_in_threadpool(upload_image, image.file, image.filename)
+            result = await run_in_threadpool(upload_image, image, folder="E-Commerce-Microservices/products")
 
             # Expecting: (image_url, public_id)
             if not result:

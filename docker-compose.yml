@@ -61,6 +61,10 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    
+    volumes:
+      - ./server/services/user-service/app:/app/app
+      - ./server/shared:/app/shared
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
 
   # ============================================
@@ -88,6 +92,10 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
+    
+    volumes:
+      - ./server/services/product-service/app:/app/app
+      - ./server/shared:/app/shared
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
 
   review-service:
@@ -113,6 +121,9 @@ services:
       retries: 3
       start_period: 20s
     
+    volumes:
+      - ./server/services/review-service/app:/app/app
+      - ./server/shared:/app/shared
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
 
   # ============================================
