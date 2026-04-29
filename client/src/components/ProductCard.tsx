@@ -10,7 +10,7 @@ import { useAppDispatch } from "@/hooks/hooks";
 import { addToCart } from "@/redux/slice/cartSlice";
 import { toast } from "sonner";
 
-export function ProductCard({ product }: { product: IProduct }) {
+export default function ProductCard({ product }: { product: IProduct }) {
   const dispatch = useAppDispatch();
 
   const handleAddToCart = (e: React.MouseEvent) => {

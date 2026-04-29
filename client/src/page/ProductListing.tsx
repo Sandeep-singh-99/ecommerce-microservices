@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { lazy, Suspense, useState } from 'react';
 import { Filter, SlidersHorizontal } from 'lucide-react';
 import { dummyProducts } from '@/lib/data';
-import { ProductCard } from '@/components/ProductCard';
+const ProductCard = lazy(() => import('@/components/ProductCard'));
 import { FilterSidebar } from '@/components/FilterSidebar';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription, SheetHeader } from '@/components/ui/sheet';
@@ -21,6 +21,8 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+
+import { ProductCardSkeleton } from '@/components/skeleton/ProductCardSkeleton';
 
 export default function ProductListing() {
   const [sortBy, setSortBy] = useState("featured");
@@ -80,11 +82,15 @@ export default function ProductListing() {
         <div className="flex-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-12">
             {dummyProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <Suspense fallback={ <ProductCardSkeleton /> }>
+                <ProductCard key={product.id} product={product} />
+              </Suspense>
             ))}
             {/* Duplicate to show more for demo purposes */}
             {dummyProducts.slice(0, 4).map(product => (
-              <ProductCard key={`${product.id}-dup`} product={{...product, id: `${product.id}-dup`}} />
+              <Suspense fallback={ <ProductCardSkeleton /> }>
+                <ProductCard key={`${product.id}-dup`} product={{...product, id: `${product.id}-dup`}} />
+              </Suspense>
             ))}
           </div>
 

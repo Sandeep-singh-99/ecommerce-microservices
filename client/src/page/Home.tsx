@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Zap, Shield, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { dummyProducts, dummyCategories } from '@/lib/data';
-import { ProductCard } from '@/components/ProductCard';
-import { CategoryCard } from '@/components/CategoryCard';
+const ProductCard = lazy(() => import("@/components/ProductCard"));  
+const CategoryCard = lazy(() => import('@/components/CategoryCard'));
+
+import { ProductCardSkeleton } from '@/components/skeleton/ProductCardSkeleton';
+import { CategoryCardSkeleton } from '@/components/skeleton/CategoryCardSkeleton';
 
 export default function Home() {
   const featuredProducts = dummyProducts.slice(0, 8);
@@ -97,7 +100,9 @@ export default function Home() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
             {dummyCategories.map(category => (
-              <CategoryCard key={category.id} category={category} />
+              <Suspense fallback={ <CategoryCardSkeleton /> }>
+                <CategoryCard key={category.id} category={category} />
+              </Suspense>
             ))}
           </div>
           <Button variant="outline" asChild className="w-full mt-8 sm:hidden">
@@ -118,7 +123,9 @@ export default function Home() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
             {featuredProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <Suspense fallback={ <ProductCardSkeleton /> }>
+                <ProductCard key={product.id} product={product} />
+              </Suspense>
             ))}
           </div>
         </div>
@@ -162,7 +169,9 @@ export default function Home() {
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
             {trendingProducts.map(product => (
-              <ProductCard key={product.id} product={product} />
+              <Suspense fallback={ <ProductCardSkeleton /> }>
+                <ProductCard key={product.id} product={product} />
+              </Suspense>
             ))}
           </div>
         </div>

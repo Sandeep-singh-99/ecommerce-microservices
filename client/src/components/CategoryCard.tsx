@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import type { ICategory } from "@/types/product";
 import { Card } from "./ui/card";
 
-export function CategoryCard({ category }: { category: ICategory }) {
+export default function CategoryCard({ category }: { category: ICategory }) {
   return (
     <Link to={`/category/${category.slug}`} className="group block">
       <Card className="relative overflow-hidden aspect-[4/5] border-0 rounded-2xl">

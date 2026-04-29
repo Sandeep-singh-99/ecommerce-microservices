@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ChevronRight, ShieldCheck, Truck, RotateCcw, Heart, Share2, ShoppingCart } from 'lucide-react';
-import { dummyProducts } from '@/lib/data';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RatingStars } from '@/components/RatingStars';
-import { QuantitySelector } from '@/components/QuantitySelector';
-import { ProductCard } from '@/components/ProductCard';
-import { useAppDispatch } from '@/hooks/hooks';
-import { addToCart } from '@/redux/slice/cartSlice';
-import { toast } from 'sonner';
+import React, { lazy, Suspense, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import {
+  ChevronRight,
+  ShieldCheck,
+  Truck,
+  RotateCcw,
+  Heart,
+  Share2,
+  ShoppingCart,
+} from "lucide-react";
+import { dummyProducts } from "@/lib/data";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RatingStars } from "@/components/RatingStars";
+import { QuantitySelector } from "@/components/QuantitySelector";
+const ProductCard = lazy(() => import("@/components/ProductCard"));
+import { useAppDispatch } from "@/hooks/hooks";
+import { addToCart } from "@/redux/slice/cartSlice";
+import { toast } from "sonner";
+
+import { ProductCardSkeleton } from "@/components/skeleton/ProductCardSkeleton";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   // For demo, just find by id or use first product
-  const product = dummyProducts.find(p => p.id === id) || dummyProducts[0];
-  const relatedProducts = dummyProducts.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
-  
+  const product = dummyProducts.find((p) => p.id === id) || dummyProducts[0];
+  const relatedProducts = dummyProducts
+    .filter((p) => p.category === product.category && p.id !== product.id)
+    .slice(0, 4);
+
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const dispatch = useAppDispatch();
@@ -28,7 +40,7 @@ export default function ProductDetail() {
     product.images[0],
     "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=800&auto=format&fit=crop"
+    "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=800&auto=format&fit=crop",
   ].slice(0, 4);
 
   const handleAddToCart = () => {
@@ -40,13 +52,24 @@ export default function ProductDetail() {
     <div className="container mx-auto px-4 md:px-10 py-8">
       {/* Breadcrumbs */}
       <nav className="flex text-sm text-muted-foreground mb-8">
-        <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+        <Link to="/" className="hover:text-primary transition-colors">
+          Home
+        </Link>
         <ChevronRight className="h-4 w-4 mx-2" />
-        <Link to="/products" className="hover:text-primary transition-colors">Products</Link>
+        <Link to="/products" className="hover:text-primary transition-colors">
+          Products
+        </Link>
         <ChevronRight className="h-4 w-4 mx-2" />
-        <Link to={`/category/${product.category.toLowerCase()}`} className="hover:text-primary transition-colors">{product.category}</Link>
+        <Link
+          to={`/category/${product.category.toLowerCase()}`}
+          className="hover:text-primary transition-colors"
+        >
+          {product.category}
+        </Link>
         <ChevronRight className="h-4 w-4 mx-2" />
-        <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">{product.name}</span>
+        <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">
+          {product.name}
+        </span>
       </nav>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
@@ -54,24 +77,31 @@ export default function ProductDetail() {
         <div className="space-y-4">
           <div className="aspect-square bg-muted/20 rounded-2xl overflow-hidden relative border border-border">
             {product.badge && (
-              <Badge className="absolute top-4 left-4 z-10" variant={product.badge === "Sale" ? "destructive" : "default"}>
+              <Badge
+                className="absolute top-4 left-4 z-10"
+                variant={product.badge === "Sale" ? "destructive" : "default"}
+              >
                 {product.badge}
               </Badge>
             )}
-            <img 
-              src={galleryImages[activeImage]} 
-              alt={product.name} 
+            <img
+              src={galleryImages[activeImage]}
+              alt={product.name}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="grid grid-cols-4 gap-4">
             {galleryImages.map((img, idx) => (
-              <button 
+              <button
                 key={idx}
                 onClick={() => setActiveImage(idx)}
-                className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${activeImage === idx ? 'border-violet-500' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${activeImage === idx ? "border-violet-500" : "border-transparent opacity-70 hover:opacity-100"}`}
               >
-                <img src={img} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
+                <img
+                  src={img}
+                  alt={`Thumbnail ${idx}`}
+                  className="w-full h-full object-cover"
+                />
               </button>
             ))}
           </div>
@@ -85,7 +115,7 @@ export default function ProductDetail() {
           <h1 className="text-3xl md:text-4xl font-bold mb-4 tracking-tight text-balance">
             {product.name}
           </h1>
-          
+
           <div className="flex items-center gap-4 mb-6">
             <RatingStars rating={product.rating} size={18} />
             <span className="text-sm font-medium text-muted-foreground underline decoration-dashed underline-offset-4 cursor-pointer">
@@ -98,12 +128,21 @@ export default function ProductDetail() {
           </div>
 
           <div className="flex items-end gap-3 mb-6">
-            <span className="text-4xl font-bold">${product.price.toFixed(2)}</span>
+            <span className="text-4xl font-bold">
+              ${product.price.toFixed(2)}
+            </span>
             {product.originalPrice && (
               <>
-                <span className="text-xl text-muted-foreground line-through mb-1">${product.originalPrice.toFixed(2)}</span>
+                <span className="text-xl text-muted-foreground line-through mb-1">
+                  ${product.originalPrice.toFixed(2)}
+                </span>
                 <Badge variant="destructive" className="mb-2 h-6">
-                  {Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}% OFF
+                  {Math.round(
+                    ((product.originalPrice - product.price) /
+                      product.originalPrice) *
+                      100,
+                  )}
+                  % OFF
                 </Badge>
               </>
             )}
@@ -118,15 +157,27 @@ export default function ProductDetail() {
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <div className="flex flex-col gap-2">
               <span className="text-sm font-medium">Quantity</span>
-              <QuantitySelector quantity={quantity} onChange={setQuantity} max={product.stock} />
+              <QuantitySelector
+                quantity={quantity}
+                onChange={setQuantity}
+                max={product.stock}
+              />
             </div>
             <div className="flex flex-col gap-2 flex-1 justify-end">
-              <Button size="lg" className="w-full h-12 text-base shadow-lg shadow-primary/20" onClick={handleAddToCart}>
+              <Button
+                size="lg"
+                className="w-full h-12 text-base shadow-lg shadow-primary/20"
+                onClick={handleAddToCart}
+              >
                 <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
               </Button>
             </div>
             <div className="flex items-end">
-              <Button variant="outline" size="icon" className="h-12 w-12 shrink-0">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-12 w-12 shrink-0"
+              >
                 <Heart className="h-5 w-5 text-muted-foreground hover:text-red-500 transition-colors" />
               </Button>
             </div>
@@ -153,18 +204,32 @@ export default function ProductDetail() {
       <div className="mb-20">
         <Tabs defaultValue="details" className="w-full">
           <TabsList className="w-full justify-start border-b border-border rounded-none bg-transparent p-0 h-auto mb-8">
-            <TabsTrigger value="details" className="text-base py-3 px-6 rounded-none border-b-2 border-transparent data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+            <TabsTrigger
+              value="details"
+              className="text-base py-3 px-6 rounded-none border-b-2 border-transparent data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
               Product Details
             </TabsTrigger>
-            <TabsTrigger value="reviews" className="text-base py-3 px-6 rounded-none border-b-2 border-transparent data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+            <TabsTrigger
+              value="reviews"
+              className="text-base py-3 px-6 rounded-none border-b-2 border-transparent data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+            >
               Reviews ({product.reviewCount})
             </TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="details" className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground">
-            <h3 className="text-xl font-semibold text-foreground mb-4">About this item</h3>
+
+          <TabsContent
+            value="details"
+            className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
+          >
+            <h3 className="text-xl font-semibold text-foreground mb-4">
+              About this item
+            </h3>
             <p className="mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
+              enim ad minim veniam, quis nostrud exercitation ullamco laboris
+              nisi ut aliquip ex ea commodo consequat.
             </p>
             <ul className="space-y-2 list-disc pl-5">
               <li>Premium quality materials designed to last</li>
@@ -174,7 +239,7 @@ export default function ProductDetail() {
               <li>Eco-friendly packaging</li>
             </ul>
           </TabsContent>
-          
+
           <TabsContent value="reviews">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="md:col-span-1 border border-border p-6 rounded-2xl bg-card">
@@ -183,43 +248,58 @@ export default function ProductDetail() {
                   <div className="text-5xl font-bold">{product.rating}</div>
                   <div className="flex flex-col gap-1">
                     <RatingStars rating={product.rating} />
-                    <span className="text-sm text-muted-foreground">{product.reviewCount} global ratings</span>
+                    <span className="text-sm text-muted-foreground">
+                      {product.reviewCount} global ratings
+                    </span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-3">
                   {[5, 4, 3, 2, 1].map((star) => (
                     <div key={star} className="flex items-center gap-3">
-                      <span className="text-sm font-medium w-12">{star} star</span>
+                      <span className="text-sm font-medium w-12">
+                        {star} star
+                      </span>
                       <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-amber-400 rounded-full" 
-                          style={{ width: `${star === 5 ? 70 : star === 4 ? 20 : star === 3 ? 5 : star === 2 ? 3 : 2}%` }}
+                        <div
+                          className="h-full bg-amber-400 rounded-full"
+                          style={{
+                            width: `${star === 5 ? 70 : star === 4 ? 20 : star === 3 ? 5 : star === 2 ? 3 : 2}%`,
+                          }}
                         />
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
-              
+
               <div className="md:col-span-2 space-y-6">
                 {[1, 2, 3].map((_, i) => (
-                  <div key={i} className="pb-6 border-b border-border last:border-0">
+                  <div
+                    key={i}
+                    className="pb-6 border-b border-border last:border-0"
+                  >
                     <div className="flex items-center gap-3 mb-2">
                       <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-semibold text-muted-foreground">
                         JD
                       </div>
                       <div>
                         <div className="font-semibold text-sm">John Doe</div>
-                        <div className="text-xs text-muted-foreground">Verified Purchase • 2 months ago</div>
+                        <div className="text-xs text-muted-foreground">
+                          Verified Purchase • 2 months ago
+                        </div>
                       </div>
                     </div>
                     <div className="mb-3">
                       <RatingStars rating={5} size={14} />
                     </div>
-                    <h4 className="font-semibold text-sm mb-2">Excellent product, highly recommended!</h4>
+                    <h4 className="font-semibold text-sm mb-2">
+                      Excellent product, highly recommended!
+                    </h4>
                     <p className="text-sm text-muted-foreground">
-                      This is exactly what I was looking for. The quality is amazing and it arrived much faster than expected. I've been using it every day since I got it.
+                      This is exactly what I was looking for. The quality is
+                      amazing and it arrived much faster than expected. I've
+                      been using it every day since I got it.
                     </p>
                   </div>
                 ))}
@@ -234,13 +314,18 @@ export default function ProductDetail() {
         <section>
           <h2 className="text-2xl font-bold mb-6">Related Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {relatedProducts.map(p => (
-              <ProductCard key={p.id} product={p} />
+            {relatedProducts.map((p) => (
+              <Suspense fallback={<ProductCardSkeleton />}>
+                <ProductCard key={p.id} product={p} />
+              </Suspense>
             ))}
             {/* Pad with random if not enough related */}
-            {relatedProducts.length < 4 && dummyProducts.slice(0, 4 - relatedProducts.length).map(p => (
-              <ProductCard key={`pad-${p.id}`} product={p} />
-            ))}
+            {relatedProducts.length < 4 &&
+              dummyProducts.slice(0, 4 - relatedProducts.length).map((p) => (
+                <Suspense fallback={<ProductCardSkeleton />}>
+                  <ProductCard key={`pad-${p.id}`} product={p} />
+                </Suspense>
+              ))}
           </div>
         </section>
       )}
