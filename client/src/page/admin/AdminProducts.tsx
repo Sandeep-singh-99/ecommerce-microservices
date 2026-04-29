@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Plus, Search, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import { dummyProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
+import { AddProductDialog } from '@/components/admin/AddProductDialog';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -37,9 +38,7 @@ export default function AdminProducts() {
           <h1 className="text-3xl font-bold tracking-tight">Products</h1>
           <p className="text-muted-foreground">Manage your store's inventory.</p>
         </div>
-        <Button>
-          <Plus className="mr-2 h-4 w-4" /> Add Product
-        </Button>
+        <AddProductDialog />
       </div>
 
       <Card className="shadow-sm">
