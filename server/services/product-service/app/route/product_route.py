@@ -20,6 +20,7 @@ async def create_product(
     product_price: float = Form(..., ge=0.0),
     sales_price: float = Form(..., ge=0.0),
     product_description: Optional[str] = Form(None),
+    product_details: Optional[str] = Form(None),
     product_category: str = Form(...),
     images: List[UploadFile] = File(...),
     db: Session = Depends(get_db),
@@ -40,6 +41,7 @@ async def create_product(
             product_price=product_price,
             sales_price=sales_price,
             product_description=product_description,
+            product_details=product_details,
             product_category=product_category
         )
 

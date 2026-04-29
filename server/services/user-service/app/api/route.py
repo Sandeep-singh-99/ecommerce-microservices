@@ -48,7 +48,7 @@ async def register(
     db.refresh(db_user)
 
     # create JWT
-    access_token = create_access_token({"sub": db_user.email})
+    access_token = create_access_token({"sub": db_user.email, "role": db_user.role})
 
     # set cookie
     response.set_cookie(
@@ -74,7 +74,7 @@ def login(
     if not db_user or not verify_password(password, db_user.hashed_password):
         raise HTTPException(status_code=400, detail="Invalid credentials")
 
-    access_token = create_access_token({"sub": db_user.email})
+    access_token = create_access_token({"sub": db_user.email, "role": db_user.role})
 
     response.set_cookie(
         key="access_token",
