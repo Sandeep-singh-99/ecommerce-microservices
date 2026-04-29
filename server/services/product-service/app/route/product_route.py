@@ -3,7 +3,7 @@ from typing import Optional, List
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import IntegrityError
 from fastapi.concurrency import run_in_threadpool
-
+from typing_extensions import Annotated
 from app.db.database import get_db
 from app.model.product import Product, ProductImage
 from shared.cloudinary import upload_image, delete_image

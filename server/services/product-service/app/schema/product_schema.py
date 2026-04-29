@@ -9,6 +9,7 @@ class CreateProduct(BaseModel):
     sales_price: float = Field(..., ge=0.0)
     product_description: Optional[str] = None
     product_category: str = Field(..., min_length=3, max_length=100)
+    images: list[str] = Field(..., max_items=5, min_items=1)
 
 class ProductResponse(BaseModel):
     id: str = Field(...)
