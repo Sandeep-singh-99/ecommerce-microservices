@@ -32,6 +32,18 @@ async def upload_image(file, folder: str = "fastapi_uploads"):
         }
     except Exception as e:
         raise Exception(f"Cloudinary upload failed: {str(e)}")
+    
+def upload_multiple_images(file, folder: str = "fastapi_uploads"):
+    try:
+        file_content = file.read()   # ❗ no await
+        result = cloudinary.uploader.upload(file_content, folder=folder)
+
+        return {
+            "secure_url": result["secure_url"],
+            "public_id": result["public_id"]
+        }
+    except Exception as e:
+        raise Exception(f"Cloudinary upload failed: {str(e)}")
 
 # Delete Image
 def delete_image(public_id: str):

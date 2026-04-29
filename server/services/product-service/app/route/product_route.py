@@ -3,10 +3,9 @@ from typing import Optional, List
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import IntegrityError
 from fastapi.concurrency import run_in_threadpool
-from typing_extensions import Annotated
 from app.db.database import get_db
 from app.model.product import Product, ProductImage
-from shared.cloudinary import upload_image, delete_image
+from shared.cloudinary import delete_image, upload_multiple_images
 from shared.dependencies import get_current_user, TokenData
 
 router = APIRouter()
@@ -56,10 +55,8 @@ async def create_product(
                 raise HTTPException(400, "Only image files allowed")
 
             # Run blocking upload safely
-            # result = await run_in_threadpool(upload_image, image.file, image.filename)
-            result = await run_in_threadpool(upload_image, image, folder="E-Commerce-Microservices/products")
+            result = await run_in_threadpool(upload_multiple_images, image.file, "E-Commerce-Microservices/products")
 
-            # Expecting: (image_url, public_id)
             if not result:
                 raise HTTPException(500, "Image upload failed")
 
