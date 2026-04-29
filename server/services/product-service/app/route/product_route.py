@@ -170,3 +170,166 @@ def get_products(
         "limit": limit,
         "products": result
     }
+
+@router.get("/get-product/{product_id}")
+async def get_product_details(
+    product_id: int,
+    db: Session = Depends(get_db)
+):
+    product = db.query(Product).options(selectinload(Product.images)).filter(Product.id == product_id).first()
+
+    if not product:
+        raise HTTPException(404, "Product not found")
+
+    return {
+        "id": product.id,
+        "name": product.product_name,
+        "brand": product.product_brand,
+        "price": product.product_price,
+        "sales_price": product.sales_price,
+        "category": product.product_category,
+        "description": product.product_description,
+        "details": product.product_details,
+        "images": [
+            {
+                "url": img.image_url,
+                "is_primary": img.is_primary
+            } for img in product.images
+        ],
+        "created_at": product.created_at
+    }
+
+
+@router.delete("/delete-product/{product_id}")
+async def delete_product(
+    product_id: int,
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(403, "Admin access required")
+
+    product = db.query(Product).options(selectinload(Product.images)).filter(Product.id == product_id).first()
+
+    if not product:
+        raise HTTPException(404, "Product not found")
+
+    # DELETE images from Cloudinary
+    delete_tasks = [
+        run_in_threadpool(delete_image, img.public_id)
+        for img in product.images
+    ]
+    await asyncio.gather(*delete_tasks, return_exceptions=True)
+
+    # DELETE product from DB
+    db.delete(product)
+    db.commit()
+
+    return {"message": "Product deleted successfully"}
+
+
+@router.patch("/update-product/{product_id}")
+async def update_product(
+    product_id: int,
+    request: Request,
+    product_name: Optional[str] = Form(None),
+    product_brand: Optional[str] = Form(None),
+    product_price: Optional[float] = Form(None, ge=0.0),
+    sales_price: Optional[float] = Form(None, ge=0.0),
+    product_description: Optional[str] = Form(None),
+    product_details: Optional[str] = Form(None),
+    product_category: Optional[str] = Form(None),
+    new_images: Optional[List[UploadFile]] = File(None),
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(403, "Admin access required")
+
+    product = db.query(Product).options(selectinload(Product.images)).filter(Product.id == product_id).first()
+
+    if not product:
+        raise HTTPException(404, "Product not found")
+
+    # UPDATE fields if provided
+    if product_name is not None:
+        product.product_name = product_name
+
+    if product_brand is not None:
+        product.product_brand = product_brand
+
+    if product_price is not None:
+        product.product_price = product_price
+
+    if sales_price is not None:
+        product.sales_price = sales_price
+
+    if product_description is not None:
+        product.product_description = product_description
+
+    if product_details is not None:
+        product.product_details = product_details
+
+    if product_category is not None:
+        product.product_category = product_category
+
+    # Handle new images
+    if new_images is not None and len(new_images) > 0:
+        # Validate new images first
+        for image in new_images:
+            if not image.content_type.startswith("image/"):
+                raise HTTPException(400, "Only image files allowed")
+
+        # UPLOAD new images in parallel
+        upload_tasks = [
+            run_in_threadpool(
+                upload_multiple_images,
+                image.file,
+                "E-Commerce-Microservices/products"
+            )
+            for image in new_images
+        ]
+
+        results = await asyncio.gather(*upload_tasks, return_exceptions=True)
+
+        # Check for failures
+        for res in results:
+            if isinstance(res, Exception):
+                raise res
+
+        # DELETE old images from Cloudinary
+        delete_tasks = [
+            run_in_threadpool(delete_image, img.public_id)
+            for img in product.images
+        ]
+        await asyncio.gather(*delete_tasks, return_exceptions=True)
+
+        # ADD new images to the product
+        for image in new_images:
+            db_image = ProductImage(
+                image_url=image.url,
+                public_id=image.public_id,
+                is_primary=False
+            )
+            product.images.append(db_image)
+
+    db.commit()
+    db.refresh(product)
+
+    return {
+        "id": product.id,
+        "name": product.product_name,
+        "brand": product.product_brand,
+        "price": product.product_price,
+        "sales_price": product.sales_price,
+        "category": product.product_category,
+        "description": product.product_description,
+        "details": product.product_details,
+        "images": [
+            {
+                "url": img.image_url,
+                "is_primary": img.is_primary
+            } for img in product.images
+        ],
+        "created_at": product.created_at
+    }

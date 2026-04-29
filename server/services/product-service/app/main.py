@@ -6,7 +6,6 @@ from app.db.database import engine, Base
 
 app = FastAPI(
     title="Product Service API",
-    # Tell FastAPI to host docs under the /api/products route
     docs_url="/api/products/docs",
     redoc_url="/api/products/redoc",
     openapi_url="/api/products/openapi.json"
