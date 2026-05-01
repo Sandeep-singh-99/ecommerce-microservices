@@ -3,6 +3,8 @@ import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { axiosClient } from "./axiosClient";
 import { toast } from "sonner";
+import { useEffect } from "react";
+import { data } from "react-router-dom";
 
 interface ApiErrorResponse {
     message: string;
@@ -19,10 +21,11 @@ export const useSignUp = () => {
             })
             return response.data;
         },
-        onSuccess: (data) => {
+        onSuccess: (data: IAuth) => {
             toast.success("Registration successful!");
+            queryClient.invalidateQueries({ queryKey: ["authCheck"] });
         },
-        onError: (error) => {
+        onError: (error: AxiosError<ApiErrorResponse>) => {
             const errorMessage = error.response?.data?.message || error.message;
             toast.error(errorMessage);
         }
@@ -40,11 +43,11 @@ export const useSignIn = () => {
             })
             return response.data;
         },
-        onSuccess: (data) => {
-            toast.success("Login successful!");
+        onSuccess: (data: IAuth) => {
+            toast.success(data.message || "Login successful!");
             queryClient.invalidateQueries({ queryKey: ["authCheck"] });
         },
-        onError: (error) => {
+        onError: (error: AxiosError<ApiErrorResponse>) => {
             const errorMessage = error.response?.data?.message || error.message;
             toast.error(errorMessage);
         }
@@ -54,32 +57,67 @@ export const useSignIn = () => {
 
 export const useSignOut = () => {
     const queryClient = useQueryClient();
-    return useMutation<void, AxiosError<ApiErrorResponse>, void>({
+    return useMutation<IAuth, AxiosError<ApiErrorResponse>, void>({
         mutationFn: async () => {
-            await axiosClient.post("/auth/logout", {});
+            const response = await axiosClient.post("/auth/logout", {});
+            return response.data;
         },
-        onSuccess: () => {
-            toast.success("Logout successful!");
+        onSuccess: (data: IAuth) => {
+            toast.success(data.message || "Logout successful!");
+            queryClient.removeQueries({ queryKey: ["authCheck"] });
         },
-        onError: (error) => {
+        onError: (error: AxiosError<ApiErrorResponse>) => {
             const errorMessage = error.response?.data?.message || error.message;
             toast.error(errorMessage);
         }
     });
 };
 
-
 export const useAuthCheck = () => {
     const queryClient = useQueryClient();
-    return useQuery({
+
+    const query = useQuery<IAuth | null, AxiosError<ApiErrorResponse>>({
         queryKey: ["authCheck"],
         queryFn: async () => {
-            const response = await axiosClient.get("/auth/me", {
-                headers: {
-                    "Content-Type": "application/json",
+            try {
+                const response = await axiosClient.get("/auth/me");
+                return response.data;
+            } catch (error) {
+                const err = error as AxiosError<ApiErrorResponse>;
+
+                if (err.response?.status === 401) {
+                    return null;
                 }
-            });
-            return response.data;
-        }
+
+                throw err;
+            }
+        },
+
+        staleTime: 5 * 60 * 1000,
+        gcTime: 10 * 60 * 1000,
+
+        retry: (failureCount, error) => {
+            if (error.response?.status === 401) return false;
+            return failureCount < 2;
+        },
+
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: true,
     });
+
+    useEffect(() => {
+        if (query.error) {
+            if (query.error.response?.status !== 401) {
+                const errorMessage =
+                    query.error.response?.data?.message ||
+                    query.error.message;
+
+                toast.error(errorMessage);
+            }
+
+            queryClient.removeQueries({ queryKey: ["authCheck"] });
+        }
+    }, [query.error, queryClient]);
+
+    return query;
 };

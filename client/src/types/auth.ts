@@ -5,5 +5,6 @@ export interface IAuth {
     user_name: string;
     profile_image: string;
     role: string;
+    message?: string;
 }
 
