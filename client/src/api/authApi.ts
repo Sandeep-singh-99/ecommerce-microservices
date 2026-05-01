@@ -4,7 +4,6 @@ import { AxiosError } from "axios";
 import { axiosClient } from "./axiosClient";
 import { toast } from "sonner";
 import { useEffect } from "react";
-import { data } from "react-router-dom";
 
 interface ApiErrorResponse {
     message: string;
