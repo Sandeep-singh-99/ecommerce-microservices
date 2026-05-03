@@ -185,11 +185,18 @@ export function AddProductDialog() {
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="electronics">Electronics</SelectItem>
-                    <SelectItem value="clothing">Clothing</SelectItem>
-                    <SelectItem value="home">Home & Kitchen</SelectItem>
-                    <SelectItem value="sports">Sports</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
+                    <SelectItem value="mouse">Mouse</SelectItem>
+                    <SelectItem value="airpodes">Airpodes</SelectItem>
+                    <SelectItem value="camera">Camera</SelectItem>
+                    <SelectItem value="earphones">Earphones</SelectItem>
+                    <SelectItem value="mobile">Mobiles</SelectItem>
+                    <SelectItem value="printer">Printers</SelectItem>
+                    <SelectItem value="processor">Processor</SelectItem>
+                    <SelectItem value="refrigerator">Refrigerator</SelectItem>
+                    <SelectItem value="speaker">Speakers</SelectItem>
+                    <SelectItem value="tv">TV</SelectItem>
+                    <SelectItem value="trimmer">Trimmers</SelectItem>
+                    <SelectItem value="watch">Watches</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
