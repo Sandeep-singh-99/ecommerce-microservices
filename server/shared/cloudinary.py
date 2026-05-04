@@ -25,7 +25,11 @@ async def upload_image(file, folder: str = "fastapi_uploads"):
     try:
         # Read the file content
         file_content = await file.read()
-        result = cloudinary.uploader.upload(file_content, folder=folder)
+        result = cloudinary.uploader.upload(
+            file_content, 
+            folder=folder,
+            background_removal="cloudinary_ai"
+        )
         return {
             "secure_url": result["secure_url"],
             "public_id": result["public_id"]
@@ -36,7 +40,11 @@ async def upload_image(file, folder: str = "fastapi_uploads"):
 def upload_multiple_images(file, folder: str = "fastapi_uploads"):
     try:
         file_content = file.read()   # ❗ no await
-        result = cloudinary.uploader.upload(file_content, folder=folder)
+        result = cloudinary.uploader.upload(
+            file_content, 
+            folder=folder,
+            background_removal="cloudinary_ai"
+        )
 
         return {
             "secure_url": result["secure_url"],

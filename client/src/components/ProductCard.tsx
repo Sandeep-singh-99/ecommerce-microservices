@@ -3,11 +3,21 @@ import { Link } from "react-router-dom";
 import { ShoppingCart } from "lucide-react";
 import { Card, CardContent, CardFooter } from "./ui/card";
 import { Button } from "./ui/button";
-import { Badge } from "./ui/badge";
 import { RatingStars } from "./RatingStars";
 import { useAppDispatch } from "@/hooks/hooks";
 import { addToCart } from "@/redux/slice/cartSlice";
 import { toast } from "sonner";
+
+// Helper to remove white background from Cloudinary images
+const getTransparentImageUrl = (url: string) => {
+  if (!url) return '/placeholder.png';
+  if (url.includes('res.cloudinary.com')) {
+    // e_make_transparent:10 makes white background transparent (tolerance 10)
+    // f_png forces PNG format since JPG doesn't support transparency
+    return url.replace('/upload/', '/upload/e_make_transparent:10,f_png/');
+  }
+  return url;
+};
 
 export default function ProductCard({ product }: { product: any }) {
   const dispatch = useAppDispatch();
@@ -28,9 +38,9 @@ export default function ProductCard({ product }: { product: any }) {
             </Badge>
           )} */}
           <img
-            src={product.images && product.images.length > 0 ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url) : '/placeholder.png'}
+            src={getTransparentImageUrl(product.images && product.images.length > 0 ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url) : '')}
             alt={product.name}
-            className="w-full h-full object-contain transition-transform duration-500 group-hover:scale-110 mix-blend-lighten"
+            className="w-full h-full object-contain p-4 transition-transform duration-500 group-hover:scale-110"
             loading="lazy"
           />
           {/* Overlay add to cart button on hover */}
