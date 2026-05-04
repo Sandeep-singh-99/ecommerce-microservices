@@ -22,10 +22,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useGetProducts } from '@/api/productApi';
 
 export default function AdminProducts() {
   const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const limit = 10;
   
   const filteredProducts = dummyProducts.filter(p => 
     p.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -34,11 +45,12 @@ export default function AdminProducts() {
 
   const { data, isLoading, isError } = useGetProducts({
     search,
-    page: 1,
-    limit: 10,
+    page,
+    limit,
   })
 
   const products = data?.products || [];
+  const totalPages = data?.total ? Math.ceil(data.total / limit) : 1;
 
   return (
      <div className="space-y-6">
@@ -60,7 +72,10 @@ export default function AdminProducts() {
               placeholder="Search products..."
               className="pl-9 bg-background"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
             />
           </div>
         </div>
@@ -169,6 +184,69 @@ export default function AdminProducts() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Pagination */}
+      {!isLoading && !isError && totalPages > 1 && (
+        <Pagination className="mt-4">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page > 1) setPage(page - 1);
+                }}
+                className={page === 1 ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+
+            {[...Array(totalPages)].map((_, i) => {
+              const pageNumber = i + 1;
+              if (
+                pageNumber === 1 ||
+                pageNumber === totalPages ||
+                (pageNumber >= page - 1 && pageNumber <= page + 1)
+              ) {
+                return (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setPage(pageNumber);
+                      }}
+                      isActive={page === pageNumber}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              } else if (
+                pageNumber === page - 2 ||
+                pageNumber === page + 2
+              ) {
+                return (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                );
+              }
+              return null;
+            })}
+
+            <PaginationItem>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (page < totalPages) setPage(page + 1);
+                }}
+                className={page === totalPages ? "pointer-events-none opacity-50" : ""}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </div>
   );
 }

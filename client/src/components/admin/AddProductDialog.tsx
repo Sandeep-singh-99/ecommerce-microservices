@@ -98,7 +98,7 @@ export function AddProductDialog() {
       onSuccess: () => {
         setOpen(false);
         setImages([]);
-        setDetails("**Product Features**\n\n- Feature 1\n- Feature 2",);
+        setDetails("");
         setFormData({
           product_name: "",
           product_brand: "",
