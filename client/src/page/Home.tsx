@@ -8,13 +8,12 @@ const CategoryCard = lazy(() => import('@/components/CategoryCard'));
 
 import { ProductCardSkeleton } from '@/components/skeleton/ProductCardSkeleton';
 import { CategoryCardSkeleton } from '@/components/skeleton/CategoryCardSkeleton';
-import { useGetCategoryHighlights } from '@/api/productApi';
+import { useGetFeaturedProducts } from '@/api/productApi';
 
 export default function Home() {
-  const featuredProducts = dummyProducts.slice(0, 8);
   const trendingProducts = dummyProducts.filter(p => p.badge === 'Trending').slice(0, 4);
 
-  const { data, isLoading, isError } = useGetCategoryHighlights();
+  const { data, isLoading, isError } = useGetFeaturedProducts();
 
   const categories = data?.products || [];
 

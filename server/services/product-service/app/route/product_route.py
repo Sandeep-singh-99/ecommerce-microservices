@@ -335,8 +335,8 @@ async def update_product(
     }
 
 
-@router.get("/get-category-highlights")
-def get_category_highlights(db: Session = Depends(get_db)):
+@router.get("/get-featured-products")
+def get_featured_products(db: Session = Depends(get_db)):
     # Get up to 8 distinct categories
     categories = db.query(Product.product_category).distinct().limit(8).all()
     

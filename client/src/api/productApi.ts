@@ -52,12 +52,12 @@ export const useGetProducts = (params: ProductQueryParams = {}) => {
   });
 };
 
-export const useGetCategoryHighlights = () => {
+export const useGetFeaturedProducts = () => {
   return useQuery<IProducts, AxiosError<ApiErrorResponse>>({
-    queryKey: ["category-highlights"],
+    queryKey: ["featured-products"],
 
     queryFn: async () => {
-      const response = await axiosClient.get("/api/products/get-category-highlights");
+      const response = await axiosClient.get("/api/products/get-featured-products");
       return response.data;
     },
 
