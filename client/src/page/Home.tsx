@@ -8,10 +8,15 @@ const CategoryCard = lazy(() => import('@/components/CategoryCard'));
 
 import { ProductCardSkeleton } from '@/components/skeleton/ProductCardSkeleton';
 import { CategoryCardSkeleton } from '@/components/skeleton/CategoryCardSkeleton';
+import { useGetCategoryHighlights } from '@/api/productApi';
 
 export default function Home() {
   const featuredProducts = dummyProducts.slice(0, 8);
   const trendingProducts = dummyProducts.filter(p => p.badge === 'Trending').slice(0, 4);
+
+  const { data, isLoading, isError } = useGetCategoryHighlights();
+
+  const categories = data?.products || [];
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -122,11 +127,25 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 xl:gap-8">
-            {featuredProducts.map(product => (
-              <Suspense fallback={ <ProductCardSkeleton /> }>
-                <ProductCard key={product.id} product={product} />
-              </Suspense>
-            ))}
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <ProductCardSkeleton key={i} />
+              ))
+            ) : isError ? (
+              <div className="col-span-full text-center py-10 text-destructive">
+                Failed to load featured products.
+              </div>
+            ) : categories?.length === 0 ? (
+              <div className="col-span-full text-center py-10 text-muted-foreground">
+                No featured products available.
+              </div>
+            ) : (
+              categories?.map((product) => (
+                <Suspense key={product.id} fallback={<ProductCardSkeleton />}>
+                  <ProductCard product={product} />
+                </Suspense>
+              ))
+            )}
           </div>
         </div>
       </section>

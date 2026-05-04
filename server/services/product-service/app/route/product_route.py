@@ -333,3 +333,31 @@ async def update_product(
         ],
         "created_at": product.created_at
     }
+
+
+@router.get("/get-category-highlights")
+def get_category_highlights(db: Session = Depends(get_db)):
+    # Get up to 8 distinct categories
+    categories = db.query(Product.product_category).distinct().limit(8).all()
+    
+    result = []
+    for (category_name,) in categories:
+        # Get the first product for this category
+        product = db.query(Product).options(selectinload(Product.images)).filter(Product.product_category == category_name).first()
+        
+        if product:
+            result.append({
+                "id": product.id,
+                "name": product.product_name,
+                "price": product.product_price,
+                "sales_price": product.sales_price,
+                "category": product.product_category,
+                "images": [
+                    {
+                        "url": img.image_url,
+                        "is_primary": img.is_primary
+                    } for img in product.images
+                ]
+            })
+            
+    return {"products": result}

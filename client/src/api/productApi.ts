@@ -51,3 +51,17 @@ export const useGetProducts = (params: ProductQueryParams = {}) => {
     placeholderData: (previousData) => previousData,
   });
 };
+
+export const useGetCategoryHighlights = () => {
+  return useQuery<IProducts, AxiosError<ApiErrorResponse>>({
+    queryKey: ["category-highlights"],
+
+    queryFn: async () => {
+      const response = await axiosClient.get("/api/products/get-category-highlights");
+      return response.data;
+    },
+
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+};
