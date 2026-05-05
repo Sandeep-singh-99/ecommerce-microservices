@@ -61,8 +61,10 @@ export const useGetFeaturedProducts = () => {
       return response.data;
     },
 
-    staleTime: 5 * 60 * 1000,
+    staleTime: Infinity,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
   });
 };
 
@@ -78,8 +80,10 @@ export const useGetProductById = (id: string) => {
       return response.data;
     },
 
-    staleTime: 5 * 60 * 1000,
+    staleTime: Infinity,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
 
     placeholderData: (previousData) => previousData,
   });

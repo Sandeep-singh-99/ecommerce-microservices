@@ -103,7 +103,7 @@ export default function ProductDetail() {
             <img
               src={galleryImages[activeImage]}
               alt={product.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           </div>
           <div className="grid grid-cols-4 gap-4">
@@ -116,7 +116,7 @@ export default function ProductDetail() {
                 <img
                   src={img}
                   alt={`Thumbnail ${idx}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </button>
             ))}
