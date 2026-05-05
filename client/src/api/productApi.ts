@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { axiosClient } from "./axiosClient";
-import type { IProducts, ProductQueryParams } from "@/types/product";
+import type { IProducts, ProductQueryParams, Product } from "@/types/product";
 import { toast } from "sonner";
 
 interface ApiErrorResponse {
@@ -68,12 +68,12 @@ export const useGetFeaturedProducts = () => {
 
 
 export const useGetProductById = (id: string) => {
-  return useQuery<IProducts, AxiosError<ApiErrorResponse>>({
+  return useQuery<Product, AxiosError<ApiErrorResponse>>({
     queryKey: ["product", id],
 
     queryFn: async () => {
       const response = await axiosClient.get(
-        `/api/products/get-product?product_id=${id}`,
+        `/api/products/get-product/${id}`,
       );
       return response.data;
     },

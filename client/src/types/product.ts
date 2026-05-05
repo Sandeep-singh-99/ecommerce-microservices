@@ -56,6 +56,7 @@ export interface Product {
     sales_price: number;
     category: string;
     description: string;
+    details?: string;
     images: ProductImage[];
     created_at: string;
 }

@@ -173,7 +173,7 @@ def get_products(
 
 @router.get("/get-product/{product_id}")
 async def get_product_details(
-    product_id: int,
+    product_id: str,
     db: Session = Depends(get_db)
 ):
     product = db.query(Product).options(selectinload(Product.images)).filter(Product.id == product_id).first()
@@ -202,7 +202,7 @@ async def get_product_details(
 
 @router.delete("/delete-product/{product_id}")
 async def delete_product(
-    product_id: int,
+    product_id: str,
     db: Session = Depends(get_db),
     current_user: TokenData = Depends(get_current_user)
 ):

@@ -23,6 +23,7 @@ import MDEditor from "@uiw/react-md-editor";
 
 import { ProductCardSkeleton } from "@/components/skeleton/ProductCardSkeleton";
 import { useGetProductById } from "@/api/productApi";
+import { useTheme } from "@/components/theme-provider";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -37,14 +38,26 @@ export default function ProductDetail() {
   const dispatch = useAppDispatch();
 
   const { data: product, isLoading, error } = useGetProductById(id as string);
+  const { theme } = useTheme();
 
-  // Create dummy extra images for gallery demo
-  const galleryImages = [
-    product?.images[0],
+  const resolvedTheme =
+    theme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : theme;
+
+  const galleryImages = product?.images?.map((img) => img.url) || [
     "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop",
-    "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=800&auto=format&fit=crop",
-  ].slice(0, 4);
+  ];
+
+  if (isLoading || !product) {
+    return (
+      <div className="container mx-auto px-4 md:px-10 py-8 flex justify-center items-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
+      </div>
+    );
+  }
 
   const handleAddToCart = () => {
     dispatch(addToCart({ product, quantity }));
@@ -67,7 +80,7 @@ export default function ProductDetail() {
           to={`/category/${product.category.toLowerCase()}`}
           className="hover:text-primary transition-colors"
         >
-          {product.category}
+          {product.brand}
         </Link>
         <ChevronRight className="h-4 w-4 mx-2" />
         <span className="text-foreground font-medium truncate max-w-[200px] sm:max-w-none">
@@ -79,12 +92,12 @@ export default function ProductDetail() {
         {/* Product Images */}
         <div className="space-y-4">
           <div className="aspect-square bg-muted/20 rounded-2xl overflow-hidden relative border border-border">
-            {product.badge && (
+            {product.sales_price && product.sales_price < product.price && (
               <Badge
                 className="absolute top-4 left-4 z-10"
-                variant={product.badge === "Sale" ? "destructive" : "default"}
+                variant="destructive"
               >
-                {product.badge}
+                Sale
               </Badge>
             )}
             <img
@@ -120,29 +133,29 @@ export default function ProductDetail() {
           </h1>
 
           <div className="flex items-center gap-4 mb-6">
-            <RatingStars rating={product.rating} size={18} />
+            <RatingStars rating={0} size={18} />
             <span className="text-sm font-medium text-muted-foreground underline decoration-dashed underline-offset-4 cursor-pointer">
-              {product.reviewCount} Reviews
+              0 Reviews
             </span>
             <span className="text-muted-foreground">|</span>
             <span className="text-sm font-medium text-emerald-500">
-              In Stock ({product.stock})
+              In Stock (10)
             </span>
           </div>
 
           <div className="flex items-end gap-3 mb-6">
             <span className="text-4xl font-bold">
-              ${product.price.toFixed(2)}
+              ${(product.sales_price || product.price).toFixed(2)}
             </span>
-            {product.originalPrice && (
+            {product.sales_price && product.sales_price < product.price && (
               <>
                 <span className="text-xl text-muted-foreground line-through mb-1">
-                  ${product.originalPrice.toFixed(2)}
+                  ${product.price.toFixed(2)}
                 </span>
                 <Badge variant="destructive" className="mb-2 h-6">
                   {Math.round(
-                    ((product.originalPrice - product.price) /
-                      product.originalPrice) *
+                    ((product.price - product.sales_price) /
+                      product.price) *
                       100,
                   )}
                   % OFF
@@ -163,7 +176,7 @@ export default function ProductDetail() {
               <QuantitySelector
                 quantity={quantity}
                 onChange={setQuantity}
-                max={product.stock}
+                max={10}
               />
             </div>
             <div className="flex flex-col gap-2 flex-1 justify-end">
@@ -217,7 +230,7 @@ export default function ProductDetail() {
               value="reviews"
               className="text-base py-3 px-6 rounded-none border-b-2 border-transparent data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
-              Reviews ({product.reviewCount})
+              Reviews (0)
             </TabsTrigger>
           </TabsList>
 
@@ -225,22 +238,12 @@ export default function ProductDetail() {
             value="details"
             className="prose prose-sm dark:prose-invert max-w-none text-muted-foreground"
           >
-            <h3 className="text-xl font-semibold text-foreground mb-4">
-              About this item
-            </h3>
-            <p className="mb-4">
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut
-              enim ad minim veniam, quis nostrud exercitation ullamco laboris
-              nisi ut aliquip ex ea commodo consequat.
-            </p>
-            <ul className="space-y-2 list-disc pl-5">
-              <li>Premium quality materials designed to last</li>
-              <li>Engineered for maximum performance and efficiency</li>
-              <li>Tested under rigorous conditions for durability</li>
-              <li>Includes 1-year manufacturer warranty</li>
-              <li>Eco-friendly packaging</li>
-            </ul>
+            <div data-color-mode={resolvedTheme} className="bg-transparent">
+              <MDEditor.Markdown 
+                source={product?.details || product?.description || "No details available."} 
+                style={{ backgroundColor: 'transparent', color: 'inherit' }}
+              />
+            </div>
           </TabsContent>
 
           <TabsContent value="reviews">
@@ -248,11 +251,11 @@ export default function ProductDetail() {
               <div className="md:col-span-1 border border-border p-6 rounded-2xl bg-card">
                 <h3 className="font-semibold text-lg mb-4">Customer Reviews</h3>
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="text-5xl font-bold">{product.rating}</div>
+                  <div className="text-5xl font-bold">0</div>
                   <div className="flex flex-col gap-1">
-                    <RatingStars rating={product.rating} />
+                    <RatingStars rating={0} />
                     <span className="text-sm text-muted-foreground">
-                      {product.reviewCount} global ratings
+                      0 global ratings
                     </span>
                   </div>
                 </div>
@@ -313,7 +316,7 @@ export default function ProductDetail() {
       </div>
 
       {/* Related Products */}
-      {relatedProducts.length > 0 && (
+      {/* {relatedProducts.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold mb-6">Related Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -321,9 +324,9 @@ export default function ProductDetail() {
               <Suspense fallback={<ProductCardSkeleton />}>
                 <ProductCard key={p.id} product={p} />
               </Suspense>
-            ))}
+            ))} */}
             {/* Pad with random if not enough related */}
-            {relatedProducts.length < 4 &&
+            {/* {relatedProducts.length < 4 &&
               dummyProducts.slice(0, 4 - relatedProducts.length).map((p) => (
                 <Suspense fallback={<ProductCardSkeleton />}>
                   <ProductCard key={`pad-${p.id}`} product={p} />
@@ -331,7 +334,7 @@ export default function ProductDetail() {
               ))}
           </div>
         </section>
-      )}
+      )} */}
     </div>
   );
 }
