@@ -65,3 +65,22 @@ export const useGetFeaturedProducts = () => {
     gcTime: 10 * 60 * 1000,
   });
 };
+
+
+export const useGetProductById = (id: string) => {
+  return useQuery<IProducts, AxiosError<ApiErrorResponse>>({
+    queryKey: ["product", id],
+
+    queryFn: async () => {
+      const response = await axiosClient.get(
+        `/api/products/get-product?product_id=${id}`,
+      );
+      return response.data;
+    },
+
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+
+    placeholderData: (previousData) => previousData,
+  });
+};

@@ -30,13 +30,8 @@ export default function ProductCard({ product }: { product: any }) {
 
   return (
     <Link to={`/products/${product.id}`} className="group block h-full">
-      <Card className="h-full overflow-hidden transition-all hover:shadow-lg border-border/50 hover:border-violet-500/30 bg-card flex flex-col">
+      <Card className="h-full overflow-hidden transition-all hover:shadow-lg border-border/50 bg-card flex flex-col">
         <div className="relative aspect-square overflow-hidden bg-muted/20">
-          {/* {product.badge && (
-            <Badge className="absolute top-3 left-3 z-10" variant={product.badge === "Sale" ? "destructive" : "default"}>
-              {product.badge}
-            </Badge>
-          )} */}
           <img
             src={getTransparentImageUrl(product.images && product.images.length > 0 ? (typeof product.images[0] === 'string' ? product.images[0] : product.images[0].url) : '')}
             alt={product.name}
@@ -55,7 +50,7 @@ export default function ProductCard({ product }: { product: any }) {
         </div>
         <CardContent className="p-4 flex-grow flex flex-col gap-2">
           <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{product.category}</div>
-          <h3 className="font-semibold text-lg line-clamp-2 leading-tight group-hover:text-violet-500 transition-colors">
+          <h3 className="font-semibold text-lg line-clamp-2 leading-tight transition-colors">
             {product.name}
           </h3>
           {product.rating !== undefined && (
@@ -65,7 +60,7 @@ export default function ProductCard({ product }: { product: any }) {
             </div>
           )}
         </CardContent>
-        <CardFooter className="p-4 pt-0 flex items-center justify-between">
+        <CardFooter className="p-4 pt-2 flex items-center justify-between">
           <div className="flex items-end gap-2">
             <span className="text-xl font-bold">
               ${Number(product.sales_price || product.price || 0).toFixed(2)}

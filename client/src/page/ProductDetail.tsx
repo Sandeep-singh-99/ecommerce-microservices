@@ -6,7 +6,6 @@ import {
   Truck,
   RotateCcw,
   Heart,
-  Share2,
   ShoppingCart,
 } from "lucide-react";
 import { dummyProducts } from "@/lib/data";
@@ -20,24 +19,28 @@ const ProductCard = lazy(() => import("@/components/ProductCard"));
 import { useAppDispatch } from "@/hooks/hooks";
 import { addToCart } from "@/redux/slice/cartSlice";
 import { toast } from "sonner";
+import MDEditor from "@uiw/react-md-editor";
 
 import { ProductCardSkeleton } from "@/components/skeleton/ProductCardSkeleton";
+import { useGetProductById } from "@/api/productApi";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   // For demo, just find by id or use first product
-  const product = dummyProducts.find((p) => p.id === id) || dummyProducts[0];
-  const relatedProducts = dummyProducts
-    .filter((p) => p.category === product.category && p.id !== product.id)
-    .slice(0, 4);
+  // const product = dummyProducts.find((p) => p.id === id) || dummyProducts[0];
+  // const relatedProducts = dummyProducts
+  //   .filter((p) => p.category === product.category && p.id !== product.id)
+  //   .slice(0, 4);
 
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const dispatch = useAppDispatch();
 
+  const { data: product, isLoading, error } = useGetProductById(id as string);
+
   // Create dummy extra images for gallery demo
   const galleryImages = [
-    product.images[0],
+    product?.images[0],
     "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=800&auto=format&fit=crop",
     "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=800&auto=format&fit=crop",
