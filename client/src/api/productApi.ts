@@ -47,6 +47,8 @@ export const useGetProducts = (params: ProductQueryParams = {}) => {
 
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
 
     placeholderData: (previousData) => previousData,
   });
@@ -86,5 +88,23 @@ export const useGetProductById = (id: string) => {
     refetchOnWindowFocus: false,
 
     placeholderData: (previousData) => previousData,
+  });
+};
+
+export const useDeleteProductById = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      await axiosClient.delete(`/api/products/delete-product/${id}`);
+    },
+    onSuccess: (_data, id: string) => {
+      toast.success("Product deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", id] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      const errorMessage = error.response?.data.message || error.message;
+      toast.error(errorMessage);
+    },
   });
 };

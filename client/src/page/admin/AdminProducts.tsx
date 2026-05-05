@@ -31,7 +31,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
-import { useGetProducts } from '@/api/productApi';
+import { useDeleteProductById, useGetProducts } from '@/api/productApi';
 
 export default function AdminProducts() {
   const [search, setSearch] = useState('');
@@ -49,8 +49,14 @@ export default function AdminProducts() {
     limit,
   })
 
+  const { mutate: deleteProductById } = useDeleteProductById();
+
   const products = data?.products || [];
   const totalPages = data?.total ? Math.ceil(data.total / limit) : 1;
+
+  const handleDeleteProduct = (id: string) => {
+    deleteProductById(id);
+  };
 
   return (
      <div className="space-y-6">
@@ -163,7 +169,7 @@ export default function AdminProducts() {
                             <Edit className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>
 
-                          <DropdownMenuItem className="text-destructive">
+                          <DropdownMenuItem className="text-destructive" onClick={() => handleDeleteProduct(product.id)}>
                             <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </DropdownMenuItem>
                         </DropdownMenuContent>

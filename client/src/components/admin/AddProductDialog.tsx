@@ -88,7 +88,7 @@ export function AddProductDialog() {
     data.append("sales_price", formData.sales_price);
     data.append("product_category", formData.product_category);
     data.append("product_description", formData.product_description || "");
-    data.append("details", details || "");
+    data.append("product_details", details || "");
 
     images.forEach((img) => {
       data.append("images", img);
