@@ -108,3 +108,26 @@ export const useDeleteProductById = () => {
     },
   });
 };
+
+
+export const useUpdateProductById = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+      await axiosClient.patch(`/api/products/update-product/${id}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+    },
+    onSuccess: (_data, { id }: { id: string; formData: FormData }) => {
+      toast.success("Product updated successfully!");
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["product", id] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      const errorMessage = error.response?.data.message || error.message;
+      toast.error(errorMessage);
+    },
+  });
+};

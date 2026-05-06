@@ -3,7 +3,9 @@ import { Plus, Search, Edit, Trash2, MoreHorizontal } from 'lucide-react';
 import { dummyProducts } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { AddProductDialog } from '@/components/admin/AddProductDialog';
+import { EditProductDialog } from '@/components/admin/EditProductDialog';
 import { Input } from '@/components/ui/input';
+import type { Product } from '@/types/product';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -36,6 +38,7 @@ import { useDeleteProductById, useGetProducts } from '@/api/productApi';
 export default function AdminProducts() {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const limit = 10;
   
   const filteredProducts = dummyProducts.filter(p => 
@@ -165,7 +168,7 @@ export default function AdminProducts() {
                           <DropdownMenuLabel>Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
 
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setEditingProduct(product as Product)}>
                             <Edit className="mr-2 h-4 w-4" /> Edit
                           </DropdownMenuItem>
 
@@ -253,6 +256,12 @@ export default function AdminProducts() {
           </PaginationContent>
         </Pagination>
       )}
+
+      <EditProductDialog
+        product={editingProduct}
+        open={!!editingProduct}
+        onOpenChange={(open) => !open && setEditingProduct(null)}
+      />
     </div>
   );
 }
