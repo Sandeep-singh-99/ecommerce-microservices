@@ -1,7 +1,6 @@
 import React, { lazy, Suspense, useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Filter, SlidersHorizontal, ChevronRight } from "lucide-react";
-import { dummyProducts, dummyCategories } from "@/lib/data";
 const ProductCard = lazy(() => import("@/components/ProductCard"));
 import { FilterSidebar } from "@/components/FilterSidebar";
 import { Button } from "@/components/ui/button";
@@ -44,13 +43,19 @@ export default function CategoryProducts() {
     setPage(1);
   }, [slug]);
 
-  const categoryInfo = dummyCategories.find((c) => c.slug === slug) || {
-    name: slug === "all" || slug === "view-all" ? "All Products" : slug?.charAt(0).toUpperCase() + slug?.slice(1) || "Category",
-    image:
-      "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop",
+  const categoryName = slug === "all" || slug === "view-all" 
+    ? "All Products" 
+    : slug ? slug.charAt(0).toUpperCase() + slug.slice(1) : "Category";
+
+  const categoryInfo = {
+    name: categoryName,
+    image: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=2070&auto=format&fit=crop",
   };
 
-  const { data, isLoading } = useGetProductsByCategory(slug || "all", page, 8);
+  const { data, isLoading } = useGetProductsByCategory(slug || "all", {
+    page: page,
+    limit: 8,
+  });
   const displayProducts = data?.products || [];
   const totalPages = data ? Math.ceil(data.total / 8) : 1;
 
@@ -118,20 +123,6 @@ export default function CategoryProducts() {
             </Sheet>
 
             <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-              <Select value={slug || "all"} onValueChange={(val) => navigate(`/category/${val}`)}>
-                <SelectTrigger className="w-full md:w-[150px]">
-                  <SelectValue placeholder="Category" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">View All</SelectItem>
-                  {dummyCategories.map((c) => (
-                    <SelectItem key={c.id} value={c.slug}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
               <div className="flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
                 <SlidersHorizontal className="h-4 w-4 hidden md:block text-muted-foreground" />
                 <Select value={sortBy} onValueChange={setSortBy}>

@@ -59,7 +59,9 @@ export const useGetFeaturedProducts = () => {
     queryKey: ["featured-products"],
 
     queryFn: async () => {
-      const response = await axiosClient.get("/api/products/get-featured-products");
+      const response = await axiosClient.get(
+        "/api/products/get-featured-products",
+      );
       return response.data;
     },
 
@@ -70,15 +72,12 @@ export const useGetFeaturedProducts = () => {
   });
 };
 
-
 export const useGetProductById = (id: string) => {
   return useQuery<Product, AxiosError<ApiErrorResponse>>({
     queryKey: ["product", id],
 
     queryFn: async () => {
-      const response = await axiosClient.get(
-        `/api/products/get-product/${id}`,
-      );
+      const response = await axiosClient.get(`/api/products/get-product/${id}`);
       return response.data;
     },
 
@@ -109,11 +108,16 @@ export const useDeleteProductById = () => {
   });
 };
 
-
 export const useUpdateProductById = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, formData }: { id: string; formData: FormData }) => {
+    mutationFn: async ({
+      id,
+      formData,
+    }: {
+      id: string;
+      formData: FormData;
+    }) => {
       await axiosClient.patch(`/api/products/update-product/${id}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -150,16 +154,17 @@ export const useGetRelatedProducts = (id: string) => {
   });
 };
 
-export const useGetProductsByCategory = (category_name: string, page: number = 1, limit: number = 8) => {
+export const useGetProductsByCategory = (
+  category_name: string,
+  params: ProductQueryParams = {},
+) => {
   return useQuery<IProducts, AxiosError<ApiErrorResponse>>({
-    queryKey: ["products-by-category", category_name, page, limit],
+    queryKey: ["products-by-category", category_name, params],
 
     queryFn: async () => {
       const response = await axiosClient.get(
         `/api/products/get-products-by-category/${category_name}`,
-        {
-          params: { page, limit },
-        }
+        { params },
       );
       return response.data;
     },
@@ -170,4 +175,4 @@ export const useGetProductsByCategory = (category_name: string, page: number = 1
     refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
   });
-};
+};

@@ -19,7 +19,7 @@ export function FilterSidebar() {
             <div key={category.id} className="flex items-center space-x-2">
               <Checkbox id={`cat-${category.id}`} />
               <Label htmlFor={`cat-${category.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer">
-                {category.name} <span className="text-muted-foreground font-normal">({category.productCount})</span>
+                {category.name}  {/* {category.name} <span className="text-muted-foreground font-normal">({category.productCount})</span> */}
               </Label>
             </div>
           ))}
