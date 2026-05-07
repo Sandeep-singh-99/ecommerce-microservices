@@ -155,6 +155,7 @@ def get_products(
             "sales_price": product.sales_price,
             "category": product.product_category,
             "description": product.product_description,
+            "details": product.product_details,
             "images": [
                 {
                     "url": img.image_url,
@@ -230,7 +231,7 @@ async def delete_product(
 
 @router.patch("/update-product/{product_id}")
 async def update_product(
-    product_id: int,
+    product_id: str,
     request: Request,
     product_name: Optional[str] = Form(None),
     product_brand: Optional[str] = Form(None),
@@ -361,3 +362,39 @@ def get_featured_products(db: Session = Depends(get_db)):
             })
             
     return {"products": result}
+
+
+@router.get("/get-related-products/{product_id}")
+def get_related_products(product_id: str, db: Session = Depends(get_db)):
+    # First get the original product to find its category
+    product = db.query(Product).filter(Product.id == product_id).first()
+    
+    if not product:
+        raise HTTPException(404, "Product not found")
+        
+    category_name = product.product_category
+    
+    # Query up to 6 related products in the same category, excluding the current one
+    related_products = db.query(Product).options(selectinload(Product.images))\
+        .filter(Product.product_category == category_name, Product.id != product_id)\
+        .limit(6).all()
+        
+    result = []
+    for rel_product in related_products:
+        result.append({
+            "id": rel_product.id,
+            "name": rel_product.product_name,
+            "price": rel_product.product_price,
+            "sales_price": rel_product.sales_price,
+            "category": rel_product.product_category,
+            "images": [
+                {
+                    "url": img.image_url,
+                    "is_primary": img.is_primary
+                } for img in rel_product.images
+            ]
+        })
+        
+    return {"products": result}
+
+

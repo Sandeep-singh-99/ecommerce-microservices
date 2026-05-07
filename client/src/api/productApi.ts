@@ -131,3 +131,21 @@ export const useUpdateProductById = () => {
     },
   });
 };
+
+export const useGetRelatedProducts = (id: string) => {
+  return useQuery<IProducts, AxiosError<ApiErrorResponse>>({
+    queryKey: ["related-products", id],
+
+    queryFn: async () => {
+      const response = await axiosClient.get(
+        `/api/products/get-related-products/${id}`,
+      );
+      return response.data;
+    },
+
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+  });
+};

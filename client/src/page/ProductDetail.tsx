@@ -20,9 +20,12 @@ import { toast } from "sonner";
 import MDEditor from "@uiw/react-md-editor";
 
 
-import { useGetProductById } from "@/api/productApi";
+import { useGetProductById, useGetRelatedProducts } from "@/api/productApi";
 import { useTheme } from "@/components/theme-provider";
 import { ProductDetailSkeleton } from "@/components/skeleton/ProductDetailSkeleton";
+import { ProductCardSkeleton } from "@/components/skeleton/ProductCardSkeleton";
+
+const ProductCard = lazy(() => import("@/components/ProductCard"));
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
@@ -31,7 +34,9 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const dispatch = useAppDispatch();
 
-  const { data: product, isLoading, error } = useGetProductById(id as string);
+  const { data: product, isLoading } = useGetProductById(id as string);
+  const { data: relatedData } = useGetRelatedProducts(id as string);
+  const relatedProducts = relatedData?.products || [];
   const { theme } = useTheme();
 
   const resolvedTheme =
@@ -306,25 +311,18 @@ export default function ProductDetail() {
       </div>
 
       {/* Related Products */}
-      {/* {relatedProducts.length > 0 && (
+      {relatedProducts.length > 0 && (
         <section>
           <h2 className="text-2xl font-bold mb-6">Related Products</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {relatedProducts.map((p) => (
-              <Suspense fallback={<ProductCardSkeleton />}>
-                <ProductCard key={p.id} product={p} />
+              <Suspense key={p.id} fallback={<ProductCardSkeleton />}>
+                <ProductCard product={p as any} />
               </Suspense>
-            ))} */}
-            {/* Pad with random if not enough related */}
-            {/* {relatedProducts.length < 4 &&
-              dummyProducts.slice(0, 4 - relatedProducts.length).map((p) => (
-                <Suspense fallback={<ProductCardSkeleton />}>
-                  <ProductCard key={`pad-${p.id}`} product={p} />
-                </Suspense>
-              ))}
+            ))}
           </div>
         </section>
-      )} */}
+      )}
     </div>
   );
 }
