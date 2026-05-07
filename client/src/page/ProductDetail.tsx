@@ -8,30 +8,24 @@ import {
   Heart,
   ShoppingCart,
 } from "lucide-react";
-import { dummyProducts } from "@/lib/data";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RatingStars } from "@/components/RatingStars";
 import { QuantitySelector } from "@/components/QuantitySelector";
-const ProductCard = lazy(() => import("@/components/ProductCard"));
 import { useAppDispatch } from "@/hooks/hooks";
 import { addToCart } from "@/redux/slice/cartSlice";
 import { toast } from "sonner";
 import MDEditor from "@uiw/react-md-editor";
 
-import { ProductCardSkeleton } from "@/components/skeleton/ProductCardSkeleton";
+
 import { useGetProductById } from "@/api/productApi";
 import { useTheme } from "@/components/theme-provider";
+import { ProductDetailSkeleton } from "@/components/skeleton/ProductDetailSkeleton";
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
-  // For demo, just find by id or use first product
-  // const product = dummyProducts.find((p) => p.id === id) || dummyProducts[0];
-  // const relatedProducts = dummyProducts
-  //   .filter((p) => p.category === product.category && p.id !== product.id)
-  //   .slice(0, 4);
 
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -52,11 +46,7 @@ export default function ProductDetail() {
   ];
 
   if (isLoading || !product) {
-    return (
-      <div className="container mx-auto px-4 md:px-10 py-8 flex justify-center items-center min-h-[50vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   const handleAddToCart = () => {
