@@ -149,3 +149,25 @@ export const useGetRelatedProducts = (id: string) => {
     refetchOnWindowFocus: false,
   });
 };
+
+export const useGetProductsByCategory = (category_name: string, page: number = 1, limit: number = 8) => {
+  return useQuery<IProducts, AxiosError<ApiErrorResponse>>({
+    queryKey: ["products-by-category", category_name, page, limit],
+
+    queryFn: async () => {
+      const response = await axiosClient.get(
+        `/api/products/get-products-by-category/${category_name}`,
+        {
+          params: { page, limit },
+        }
+      );
+      return response.data;
+    },
+
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    placeholderData: (previousData) => previousData,
+  });
+};

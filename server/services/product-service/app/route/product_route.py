@@ -398,5 +398,45 @@ def get_related_products(product_id: str, db: Session = Depends(get_db)):
     return {"products": result}
 
 
-
-
+@router.get("/get-products-by-category/{category_name}")
+def get_products_by_category(
+    category_name: str,
+    page: int = Query(1, ge=1),
+    limit: int = Query(8, le=100),
+    db: Session = Depends(get_db)
+):
+    query = db.query(Product).options(selectinload(Product.images))
+    
+    if category_name.lower() not in ["all", "view-all", "view all"]:
+        query = query.filter(Product.product_category.ilike(category_name))
+        
+    total = query.count()
+    skip = (page - 1) * limit
+    products = query.offset(skip).limit(limit).all()
+    
+    result = []
+    for product in products:
+        result.append({
+            "id": product.id,
+            "name": product.product_name,
+            "brand": product.product_brand,
+            "price": product.product_price,
+            "sales_price": product.sales_price,
+            "category": product.product_category,
+            "description": product.product_description,
+            "details": product.product_details,
+            "images": [
+                {
+                    "url": img.image_url,
+                    "is_primary": img.is_primary
+                } for img in product.images
+            ],
+            "created_at": product.created_at
+        })
+        
+    return {
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "products": result
+    }

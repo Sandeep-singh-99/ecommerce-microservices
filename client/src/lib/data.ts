@@ -4,13 +4,13 @@ export const dummyCategories: ICategory[] = [
   {
     id: "cat_1",
     name: "Mobiles",
-    slug: "mobiles",
+    slug: "mobile",
     image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1170&auto=format&fit=crop",
   },
   {
     id: "cat_2",
     name: "Watches",
-    slug: "watches",
+    slug: "watch",
     image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?q=80&w=1172&auto=format&fit=crop",
   },
   {
