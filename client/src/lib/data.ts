@@ -3,38 +3,33 @@ import type { IProduct, ICategory, IOrder } from "@/types/product";
 export const dummyCategories: ICategory[] = [
   {
     id: "cat_1",
-    name: "Electronics",
-    slug: "electronics",
-    image: "https://images.unsplash.com/photo-1498049794561-7780e7231661?q=80&w=600&auto=format&fit=crop",
-    productCount: 45
+    name: "Mobiles",
+    slug: "mobiles",
+    image: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?q=80&w=1170&auto=format&fit=crop",
   },
   {
     id: "cat_2",
-    name: "Clothing",
-    slug: "clothing",
-    image: "https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=600&auto=format&fit=crop",
-    productCount: 120
+    name: "Watches",
+    slug: "watches",
+    image: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?q=80&w=1172&auto=format&fit=crop",
   },
   {
     id: "cat_3",
-    name: "Shoes",
-    slug: "shoes",
-    image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop",
-    productCount: 85
+    name: "TV",
+    slug: "tv",
+    image: "https://images.unsplash.com/photo-1646861039459-fd9e3aabf3fb?w=600&auto=format&fit=crop",
   },
   {
     id: "cat_4",
-    name: "Watches",
-    slug: "watches",
-    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?q=80&w=600&auto=format&fit=crop",
-    productCount: 30
+    name: "Refrigerator",
+    slug: "refrigerator",
+    image: "https://images.unsplash.com/photo-1721613877687-c9099b698faa?w=600&auto=format&fit=crop",
   },
   {
     id: "cat_5",
-    name: "Accessories",
-    slug: "accessories",
-    image: "https://images.unsplash.com/photo-1523206489230-c012c64b2b48?q=80&w=600&auto=format&fit=crop",
-    productCount: 65
+    name: "Camera",
+    slug: "camera",
+    image: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=600&auto=format&fit=crop",
   }
 ];
 

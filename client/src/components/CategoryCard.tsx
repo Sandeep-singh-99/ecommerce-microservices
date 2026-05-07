@@ -14,12 +14,9 @@ export default function CategoryCard({ category }: { category: ICategory }) {
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-6">
-          <h3 className="text-white text-2xl font-bold tracking-tight mb-1 group-hover:text-violet-400 transition-colors">
+          <h3 className="text-white text-2xl font-bold tracking-tight mb-1">
             {category.name}
           </h3>
-          <p className="text-gray-300 text-sm font-medium">
-            {category.productCount} Products
-          </p>
         </div>
       </Card>
     </Link>

@@ -24,13 +24,12 @@
 //     reviews?: IReview[];
 // }
 
-// export interface ICategory {
-//     id: string;
-//     name: string;
-//     slug: string;
-//     image: string;
-//     productCount: number;
-// }
+export interface ICategory {
+    id: string;
+    name: string;
+    slug: string;
+    image: string;
+}
 
 // export interface ICartItem {
 //     id: string; // Cart item ID (can be same as product ID)

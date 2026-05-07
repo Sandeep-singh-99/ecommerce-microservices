@@ -398,3 +398,5 @@ def get_related_products(product_id: str, db: Session = Depends(get_db)):
     return {"products": result}
 
 
+
+
