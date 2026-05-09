@@ -98,7 +98,7 @@ export default function Home() {
               <p className="text-muted-foreground">Discover products across our top categories</p>
             </div>
             <Button variant="ghost" asChild className="hidden sm:flex">
-              <Link to="/products">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/category/all">View All <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
           
@@ -110,7 +110,7 @@ export default function Home() {
             ))}
           </div>
           <Button variant="outline" asChild className="w-full mt-8 sm:hidden">
-            <Link to="/products">View All Categories</Link>
+            <Link to="/category/all">View All Categories</Link>
           </Button>
         </div>
       </section>
