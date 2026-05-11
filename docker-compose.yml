@@ -2,6 +2,7 @@ services:
   # ============================================
   # API Gateway (Nginx)
   # ============================================
+
   api-gateway:
     image: nginx:alpine
     container_name: api-gateway
@@ -39,6 +40,7 @@ services:
   # ============================================
   # User Service
   # ============================================
+
   user-service:
     build:
       context: ./server
@@ -70,6 +72,7 @@ services:
   # ============================================
   # Product Service
   # ============================================
+
   product-service:
     build:
       context: ./server
@@ -98,6 +101,10 @@ services:
       - ./server/shared:/app/shared
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
 
+  # ============================================
+  # Review Service
+  # ============================================
+
   review-service:
     build: 
       context: ./server
@@ -123,6 +130,38 @@ services:
     
     volumes:
       - ./server/services/review-service/app:/app/app
+      - ./server/shared:/app/shared
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+
+  # ============================================
+  # Cart Service
+  # ============================================
+
+  cart-service:
+    build: 
+      context: ./server
+      dockerfile: services/cart-service/Dockerfile
+    container_name: cart-service
+    expose:
+      - "8000"
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    
+    volumes:
+      - ./server/services/cart-service/app:/app/app
       - ./server/shared:/app/shared
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
 

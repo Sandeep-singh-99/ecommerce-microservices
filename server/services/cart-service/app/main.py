@@ -5,7 +5,12 @@ from app.route.cart_route import router as cart_router
 from app.db.db import engine, Base
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Cart Service API",
+    docs_url="/api/carts/docs",
+    redoc_url="/api/carts/redoc",
+    openapi_url="/api/carts/openapi.json"
+)
 
 app.add_middleware(
     CORSMiddleware,
