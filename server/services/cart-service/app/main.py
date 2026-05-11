@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.model.cart import Cart
+from app.route.cart_route import router as cart_router
 from app.db.db import engine, Base
 
 
@@ -18,6 +19,8 @@ app.add_middleware(
 async def on_startup():
     print("Creating database tables...")
     Base.metadata.create_all(bind=engine)
+
+app.include_router(cart_router, prefix="/api/carts", tags=["cart"])
 
 @app.get("/")
 def read_root():
