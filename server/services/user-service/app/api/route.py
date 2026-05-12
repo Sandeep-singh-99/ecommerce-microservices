@@ -24,7 +24,7 @@ async def register(
     # check email
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
 
     # hash password
     hashed_password = hash_password(password)
@@ -72,7 +72,7 @@ def login(
 ):
     db_user = db.query(User).filter(User.email == email).first()
     if not db_user or not verify_password(password, db_user.hashed_password):
-        raise HTTPException(status_code=400, detail="Invalid credentials")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid credentials")
 
     access_token = create_access_token({"sub": db_user.email, "role": db_user.role})
 

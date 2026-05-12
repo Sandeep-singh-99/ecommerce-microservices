@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, UploadFile, status, Request, File, Form, Query
+from fastapi import APIRouter, HTTPException, Depends, status, UploadFile, status, Request, File, Form, Query
 from typing import Optional, List
 from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import IntegrityError
@@ -27,7 +27,7 @@ async def create_product(
 ):
 
     if current_user.role != "ADMIN":
-        raise HTTPException(403, "Admin access required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     uploaded_public_ids = []
 
@@ -49,7 +49,7 @@ async def create_product(
         # Validate images first
         for image in images:
             if not image.content_type.startswith("image/"):
-                raise HTTPException(400, "Only image files allowed")
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only image files allowed")
 
         # PARALLEL UPLOADS
         upload_tasks = [
@@ -92,7 +92,7 @@ async def create_product(
 
     except IntegrityError:
         db.rollback()
-        raise HTTPException(400, "Product already exists")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Product already exists")
 
     except Exception as e:
         db.rollback()
@@ -104,7 +104,7 @@ async def create_product(
         ]
         await asyncio.gather(*cleanup_tasks, return_exceptions=True)
 
-        raise HTTPException(500, f"Error: {str(e)}")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Error: {str(e)}")
     
 
 @router.get("/get-products")
@@ -180,7 +180,7 @@ async def get_product_details(
     product = db.query(Product).options(selectinload(Product.images)).filter(Product.id == product_id).first()
 
     if not product:
-        raise HTTPException(404, "Product not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
     return {
         "id": product.id,
@@ -208,12 +208,12 @@ async def delete_product(
     current_user: TokenData = Depends(get_current_user)
 ):
     if current_user.role != "ADMIN":
-        raise HTTPException(403, "Admin access required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     product = db.query(Product).options(selectinload(Product.images)).filter(Product.id == product_id).first()
 
     if not product:
-        raise HTTPException(404, "Product not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
     # DELETE images from Cloudinary
     delete_tasks = [
@@ -245,12 +245,12 @@ async def update_product(
     current_user: TokenData = Depends(get_current_user)
 ):
     if current_user.role != "ADMIN":
-        raise HTTPException(403, "Admin access required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
 
     product = db.query(Product).options(selectinload(Product.images)).filter(Product.id == product_id).first()
 
     if not product:
-        raise HTTPException(404, "Product not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
 
     # UPDATE fields if provided
     if product_name is not None:
@@ -279,7 +279,7 @@ async def update_product(
         # Validate new images first
         for image in new_images:
             if not image.content_type.startswith("image/"):
-                raise HTTPException(400, "Only image files allowed")
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only image files allowed")
 
         # UPLOAD new images in parallel
         upload_tasks = [
@@ -296,7 +296,7 @@ async def update_product(
         # Check for failures
         for res in results:
             if isinstance(res, Exception):
-                raise res
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(res))
 
         # DELETE old images from Cloudinary
         delete_tasks = [
@@ -370,7 +370,7 @@ def get_related_products(product_id: str, db: Session = Depends(get_db)):
     product = db.query(Product).filter(Product.id == product_id).first()
     
     if not product:
-        raise HTTPException(404, "Product not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
         
     category_name = product.product_category
     
@@ -440,3 +440,15 @@ def get_products_by_category(
         "limit": limit,
         "products": result
     }
+
+
+@router.get("/find-product/{product_id}")
+def find_product(product_id: str, db: Session = Depends(get_db)):
+    product = db.query(Product).all().filter(Product.id == product_id).first()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+    
+    
+
+
+    
