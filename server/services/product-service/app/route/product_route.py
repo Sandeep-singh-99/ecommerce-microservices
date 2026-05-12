@@ -8,6 +8,7 @@ from app.model.product import Product, ProductImage
 from shared.cloudinary import delete_image, upload_multiple_images
 from shared.dependencies import get_current_user, TokenData
 import asyncio
+from typing import List
 
 router = APIRouter()
 
@@ -443,12 +444,73 @@ def get_products_by_category(
 
 
 @router.get("/find-product/{product_id}")
-def find_product(product_id: str, db: Session = Depends(get_db)):
-    product = db.query(Product).all().filter(Product.id == product_id).first()
+async def find_product(
+    product_id: str,
+    db: Session = Depends(get_db)
+):
+    product = (
+        db.query(Product)
+        .options(selectinload(Product.images))
+        .filter(Product.id == product_id)
+        .first()
+    )
+
     if not product:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Product not found"
+        )
+
+    return {
+        "id": product.id,
+        "name": product.product_name,
+        "price": product.product_price,
+        "sales_price": product.sales_price,
+        "category": product.product_category,
+        "images": [
+            {
+                "url": img.image_url,
+                "is_primary": img.is_primary
+            }
+            for img in product.images
+        ]
+    }
     
-    
+
+
+@router.post("/find-products")
+async def find_products(
+    product_ids: List[str],
+    db: Session = Depends(get_db)
+):
+    products = (
+        db.query(Product)
+        .options(selectinload(Product.images))
+        .filter(Product.id.in_(product_ids))
+        .all()
+    )
+
+    result = []
+
+    for product in products:
+        result.append({
+            "id": product.id,
+            "name": product.product_name,
+            "price": product.product_price,
+            "sales_price": product.sales_price,
+            "category": product.product_category,
+            "images": [
+                {
+                    "url": img.image_url,
+                    "is_primary": img.is_primary
+                }
+                for img in product.images
+            ]
+        })
+
+    return {
+        "products": result
+    }
 
 
     
