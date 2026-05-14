@@ -47,3 +47,22 @@ export const useFetchCartProducts = () => {
     placeholderData: (previousData) => previousData,
   })
 }
+
+
+export const useDeleteCartItem = () => {
+  const queryClient = useQueryClient();
+  return useMutation<ICart, AxiosError<ApiErrorResponse>, string>({
+    mutationFn: async (product_id: string) => {
+      const response = await axiosClient.delete(`/api/carts/delete-cart-item/${product_id}`)
+      return response.data;
+    },
+    onSuccess: (data: ICart) => {
+      toast.success("Item deleted from cart!");
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+    },
+    onError: (error: AxiosError<ApiErrorResponse>) => {
+      const errorMessage = error.response?.data?.message || error.message;
+      toast.error(errorMessage);
+    }
+  })
+}
