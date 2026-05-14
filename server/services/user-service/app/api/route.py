@@ -48,7 +48,7 @@ async def register(
     db.refresh(db_user)
 
     # create JWT
-    access_token = create_access_token({"sub": db_user.email, "role": db_user.role})
+    access_token = create_access_token({"sub": db_user.email, "role": db_user.role, "id": db_user.id})
 
     # set cookie
     response.set_cookie(

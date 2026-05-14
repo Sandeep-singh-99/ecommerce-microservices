@@ -8,6 +8,7 @@ from pydantic import BaseModel
 class TokenData(BaseModel):
     email: str
     role: str
+    user_id: str
 
     # If your JWT payload includes the user's ID, add it here too!
     # user_id: str 
@@ -35,7 +36,7 @@ def get_current_user(request: Request) -> TokenData:
             )
             
         # Return the Pydantic schema, NOT the database model
-        return TokenData(email=email, role=payload.get("role"))
+        return TokenData(email=email, role=payload.get("role"), user_id=payload.get("id"))
         
     except Exception:
         raise HTTPException(
