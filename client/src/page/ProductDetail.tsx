@@ -16,6 +16,7 @@ import { RatingStars } from "@/components/RatingStars";
 import { QuantitySelector } from "@/components/QuantitySelector";
 import { useAppDispatch } from "@/hooks/hooks";
 import { addToCart } from "@/redux/slice/cartSlice";
+import { useAddToCart } from "@/api/cartApi";
 import { toast } from "sonner";
 import MDEditor from "@uiw/react-md-editor";
 
@@ -33,6 +34,7 @@ export default function ProductDetail() {
   const [activeImage, setActiveImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const dispatch = useAppDispatch();
+  const { mutate: addToCartMutation, isPending: isAddingToCart } = useAddToCart();
 
   const { data: product, isLoading } = useGetProductById(id as string);
   const { data: relatedData } = useGetRelatedProducts(id as string);
@@ -55,8 +57,11 @@ export default function ProductDetail() {
   }
 
   const handleAddToCart = () => {
-    dispatch(addToCart({ product, quantity }));
-    toast.success(`${quantity} ${product.name} added to cart`);
+    addToCartMutation({
+      product_id: product.id,
+      quantity,
+      price: product.sales_price || product.price,
+    });
   };
 
   return (
@@ -179,8 +184,10 @@ export default function ProductDetail() {
                 size="lg"
                 className="w-full h-12 text-base shadow-lg shadow-primary/20"
                 onClick={handleAddToCart}
+                disabled={isAddingToCart}
               >
-                <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                <ShoppingCart className="mr-2 h-5 w-5" /> 
+                {isAddingToCart ? "Adding..." : "Add to Cart"}
               </Button>
             </div>
             <div className="flex items-end">

@@ -11,6 +11,7 @@ import {
 import { ModeToggle } from "./mode-toggle";
 import { useAppSelector, useAppDispatch } from "@/hooks/hooks";
 import { useSignOut } from "@/api/authApi";
+import { useFetchCartProducts } from "@/api/cartApi";
 import { logout } from "@/redux/slice/authSlice";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -32,6 +33,9 @@ export default function Navbar() {
   const dispatch = useAppDispatch();
   const { mutateAsync: signOut } = useSignOut();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Sync cart data with redux if user is logged in
+  useFetchCartProducts(!!user);
 
   const handleLogout = async () => {
     await signOut();

@@ -23,6 +23,14 @@ export interface ProductImage {
   is_primary: boolean;
 }
 
+export type IProduct = Product;
+
+export interface ICartItem {
+  id: string;
+  product: IProduct;
+  quantity: number;
+}
+
 export interface IProducts {
   total: number;
   page: number;

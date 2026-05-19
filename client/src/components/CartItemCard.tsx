@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import type { ICartItem } from "@/types/product";
 import { useAppDispatch } from "@/hooks/hooks";
 import { removeFromCart, updateQuantity } from "@/redux/slice/cartSlice";
+import { useDeleteCartItem } from "@/api/cartApi";
 import { QuantitySelector } from "./QuantitySelector";
 import { Button } from "./ui/button";
 
@@ -11,12 +12,14 @@ export function CartItemCard({ item }: { item: ICartItem }) {
   const dispatch = useAppDispatch();
   const { product, quantity } = item;
 
+  const { mutate: deleteItem, isPending: isDeleting } = useDeleteCartItem();
+
   const handleQuantityChange = (newQuantity: number) => {
     dispatch(updateQuantity({ id: product.id, quantity: newQuantity }));
   };
 
   const handleRemove = () => {
-    dispatch(removeFromCart(product.id));
+    deleteItem(product.id);
   };
 
   return (
@@ -65,8 +68,9 @@ export function CartItemCard({ item }: { item: ICartItem }) {
               size="icon"
               className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
               onClick={handleRemove}
+              disabled={isDeleting}
             >
-              <Trash2 className="h-5 w-5" />
+              <Trash2 className={`h-5 w-5 ${isDeleting ? "animate-pulse" : ""}`} />
             </Button>
           </div>
         </div>

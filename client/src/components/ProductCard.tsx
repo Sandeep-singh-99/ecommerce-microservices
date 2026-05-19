@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { RatingStars } from "./RatingStars";
 import { useAppDispatch } from "@/hooks/hooks";
 import { addToCart } from "@/redux/slice/cartSlice";
+import { useAddToCart } from "@/api/cartApi";
 import { toast } from "sonner";
 
 // Helper to remove white background from Cloudinary images
@@ -21,11 +22,15 @@ const getTransparentImageUrl = (url: string) => {
 
 export default function ProductCard({ product }: { product: any }) {
   const dispatch = useAppDispatch();
+  const { mutate: addToCartMutation, isPending: isAddingToCart } = useAddToCart();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigating to product detail
-    dispatch(addToCart({ product }));
-    toast.success(`${product.name} added to cart`);
+    addToCartMutation({
+      product_id: product.id,
+      quantity: 1,
+      price: product.sales_price || product.price,
+    });
   };
 
   return (
@@ -43,8 +48,10 @@ export default function ProductCard({ product }: { product: any }) {
             <Button
               className="translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-xl"
               onClick={handleAddToCart}
+              disabled={isAddingToCart}
             >
-              <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+              <ShoppingCart className="mr-2 h-4 w-4" /> 
+              {isAddingToCart ? "Adding..." : "Add to Cart"}
             </Button>
           </div>
         </div>

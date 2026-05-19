@@ -1,8 +1,11 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { axiosClient } from "./axiosClient";
 import { AxiosError } from "axios";
-import type { ICart } from "@/types/cart";
+import type { ICart, ICartResponse } from "@/types/cart";
 import { toast } from "sonner";
+import { useAppDispatch } from "@/hooks/hooks";
+import { setCart } from "@/redux/slice/cartSlice";
+import { useEffect } from "react";
 
 
 interface ApiErrorResponse {
@@ -11,13 +14,9 @@ interface ApiErrorResponse {
 
 export const useAddToCart = () => {
     const queryClient = useQueryClient();
-    return useMutation<ICart , AxiosError<ApiErrorResponse>, FormData>({
-        mutationFn: async (formData: FormData) => {
-            const response = await  axiosClient.post("/api/carts/add-cart-item", formData, {
-                headers: {
-                    "Content-Type": "multipart/form-data",
-                }
-            })
+    return useMutation<ICart , AxiosError<ApiErrorResponse>, { product_id: string; quantity: number; price: number }>({
+        mutationFn: async (data) => {
+            const response = await axiosClient.post("/api/carts/add-cart-item", data)
             return response.data;
         },
         onSuccess: (data: ICart) => {
@@ -32,20 +31,37 @@ export const useAddToCart = () => {
 }
 
 
-export const useFetchCartProducts = () => {
-  return useQuery<ICart, AxiosError<ApiErrorResponse>>({
+export const useFetchCartProducts = (enabled: boolean = true) => {
+  const dispatch = useAppDispatch();
+  const query = useQuery<ICartResponse, AxiosError<ApiErrorResponse>>({
     queryKey: ["cart"],
     queryFn: async () => {
-      const response = await axiosClient.get("/api/carts/get-cart-item")
+      const response = await axiosClient.get("/api/carts/get-cart-items")
       return response.data;
     },
+    enabled,
 
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     placeholderData: (previousData) => previousData,
-  })
+  });
+
+  useEffect(() => {
+    if (query.data && query.data.products) {
+      const items = query.data.products.map(p => ({
+        id: p.product_id,
+        product: p.product as any, // Cast because the backend returns a Product, which we alias to IProduct
+        quantity: p.quantity
+      }));
+      dispatch(setCart(items));
+    } else if (query.data && query.data.products?.length === 0) {
+      dispatch(setCart([]));
+    }
+  }, [query.data, dispatch]);
+
+  return query;
 }
 
 
