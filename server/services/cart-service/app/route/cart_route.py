@@ -29,7 +29,7 @@ async def add_cart_item(
             detail="Product not found"
         )
 
-    product_data = response.json()
+    # product_data = response.json()
 
     # CHECK EXISTING ITEM
     existing_item = (
@@ -58,7 +58,8 @@ async def add_cart_item(
         user_id=current_user.user_id,
         product_id=cart_item.product_id,
         quantity=cart_item.quantity,
-        price=product_data["sales_price"]
+        # price=product_data["sales_price"]
+        price=cart_item.price
     )
 
     db.add(new_cart_item)
@@ -143,7 +144,7 @@ async def get_cart_items(
 
 @router.delete("/delete-cart-item/{product_id}")
 async def delete_cart_item(
-    product_id: int,
+    product_id: str,
     db: Session = Depends(get_db),
     current_user: TokenData = Depends(get_current_user)
 ):

@@ -2,7 +2,6 @@ from pydantic import BaseModel, Field
 
 
 class CartItem(BaseModel):
-    user_id: str = Field(...)
     product_id: str = Field(...)
     quantity: int = Field(..., ge=1)
     price: float = Field(..., ge=0.0)
