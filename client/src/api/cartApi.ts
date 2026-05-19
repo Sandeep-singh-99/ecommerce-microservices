@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient, useQuery, QueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { axiosClient } from "./axiosClient";
 import { AxiosError } from "axios";
 import type { ICart } from "@/types/cart";
