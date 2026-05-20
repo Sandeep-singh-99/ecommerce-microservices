@@ -15,6 +15,7 @@ export interface Product {
   description: string;
   details?: string;
   images: ProductImage[];
+  image?: ProductImage;
   created_at: string;
 }
 

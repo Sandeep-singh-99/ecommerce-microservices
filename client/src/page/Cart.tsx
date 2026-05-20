@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator';
 export default function Cart() {
   const { items } = useAppSelector(state => state.cart);
   
-  const subtotal = items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const subtotal = items.reduce((total, item) => total + (Number(item.product.sales_price || item.product.price || 0) * item.quantity), 0);
   const shipping = subtotal > 100 ? 0 : 15.00;
   const tax = subtotal * 0.08; // 8% tax
   const total = subtotal + shipping + tax;

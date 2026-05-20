@@ -22,12 +22,14 @@ export function CartItemCard({ item }: { item: ICartItem }) {
     deleteItem(product.id);
   };
 
+  const imageUrl = product.image?.url || product.images?.[0]?.url || "/placeholder.png";
+
   return (
     <div className="flex gap-4 py-4 border-b border-border last:border-0">
       <Link to={`/products/${product.id}`} className="shrink-0">
         <div className="w-24 h-24 sm:w-32 sm:h-32 bg-muted/20 rounded-md overflow-hidden">
           <img
-            src={product.images[0]}
+            src={imageUrl}
             alt={product.name}
             className="w-full h-full object-cover"
           />
@@ -47,10 +49,10 @@ export function CartItemCard({ item }: { item: ICartItem }) {
             </Link>
           </div>
           <div className="text-right">
-            <div className="font-bold text-lg sm:text-xl">${product.price.toFixed(2)}</div>
-            {product.originalPrice && (
+            <div className="font-bold text-lg sm:text-xl">${Number(product.sales_price || product.price || 0).toFixed(2)}</div>
+            {(product.sales_price && product.price && product.sales_price < product.price) && (
               <div className="text-sm text-muted-foreground line-through">
-                ${product.originalPrice.toFixed(2)}
+                ${Number(product.price).toFixed(2)}
               </div>
             )}
           </div>
@@ -61,7 +63,7 @@ export function CartItemCard({ item }: { item: ICartItem }) {
           
           <div className="flex items-center gap-4">
             <span className="font-semibold hidden sm:inline-block">
-              Total: ${(product.price * quantity).toFixed(2)}
+              Total: ${(Number(product.sales_price || product.price || 0) * quantity).toFixed(2)}
             </span>
             <Button
               variant="ghost"

@@ -478,6 +478,41 @@ async def find_product(
     
 
 
+# @router.post("/find-products")
+# async def find_products(
+#     product_ids: List[str],
+#     db: Session = Depends(get_db)
+# ):
+#     products = (
+#         db.query(Product)
+#         .options(selectinload(Product.images))
+#         .filter(Product.id.in_(product_ids))
+#         .all()
+#     )
+
+#     result = []
+
+#     for product in products:
+#         result.append({
+#             "id": product.id,
+#             "name": product.product_name,
+#             "price": product.product_price,
+#             "sales_price": product.sales_price,
+#             "category": product.product_category,
+#             "images": [
+#                 {
+#                     "url": img.image_url,
+#                     "is_primary": img.is_primary
+#                 }
+#                 for img in product.images
+#             ]
+#         })
+
+#     return {
+#         "products": result
+#     }
+
+
 @router.post("/find-products")
 async def find_products(
     product_ids: List[str],
@@ -493,24 +528,26 @@ async def find_products(
     result = []
 
     for product in products:
+        # Get only primary image
+        primary_image = next(
+            (img for img in product.images if img.is_primary),
+            None
+        )
+
         result.append({
             "id": product.id,
             "name": product.product_name,
             "price": product.product_price,
             "sales_price": product.sales_price,
             "category": product.product_category,
-            "images": [
-                {
-                    "url": img.image_url,
-                    "is_primary": img.is_primary
-                }
-                for img in product.images
-            ]
+            "image": {
+                "url": primary_image.image_url,
+                "is_primary": primary_image.is_primary
+            } if primary_image else None
         })
 
     return {
         "products": result
     }
-
 
     
