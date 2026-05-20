@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import type { ICartItem } from "@/types/product";
 import { useAppDispatch } from "@/hooks/hooks";
-import { removeFromCart, updateQuantity } from "@/redux/slice/cartSlice";
+import { updateQuantity } from "@/redux/slice/cartSlice";
 import { useDeleteCartItem } from "@/api/cartApi";
 import { QuantitySelector } from "./QuantitySelector";
 import { Button } from "./ui/button";
