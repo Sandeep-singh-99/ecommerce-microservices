@@ -7,9 +7,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
+import { useFetchCartProducts } from '@/api/cartApi';
+import { CartPageSkeleton } from '@/components/skeleton/CartPageSkeleton';
 
 export default function Cart() {
   const { items } = useAppSelector(state => state.cart);
+  const { user } = useAppSelector(state => state.auth);
+  const { isLoading } = useFetchCartProducts(!!user);
+  
+  if (isLoading) {
+    return <CartPageSkeleton />;
+  }
   
   const subtotal = items.reduce((total, item) => total + (Number(item.product.sales_price || item.product.price || 0) * item.quantity), 0);
   const shipping = subtotal > 100 ? 0 : 15.00;
