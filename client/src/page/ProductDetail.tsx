@@ -22,6 +22,7 @@ import MDEditor from "@uiw/react-md-editor";
 
 
 import { useGetProductById, useGetRelatedProducts } from "@/api/productApi";
+import { useGetProductRating, useGetProductComments, useCreateReview } from "@/api/reviewApi";
 import { useTheme } from "@/components/theme-provider";
 import { ProductDetailSkeleton } from "@/components/skeleton/ProductDetailSkeleton";
 import { ProductCardSkeleton } from "@/components/skeleton/ProductCardSkeleton";
@@ -38,8 +39,26 @@ export default function ProductDetail() {
 
   const { data: product, isLoading } = useGetProductById(id as string);
   const { data: relatedData } = useGetRelatedProducts(id as string);
+  const { data: ratingData } = useGetProductRating(id as string);
+  const { data: commentsData } = useGetProductComments(id as string);
+  const { mutate: submitReview, isPending: isSubmittingReview } = useCreateReview();
+  
   const relatedProducts = relatedData?.products || [];
   const { theme } = useTheme();
+
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState("");
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id) return;
+    submitReview({ productId: id, rating: reviewRating, comment: reviewComment }, {
+      onSuccess: () => {
+        setReviewComment("");
+        setReviewRating(5);
+      }
+    });
+  };
 
   const resolvedTheme =
     theme === "system"
@@ -133,9 +152,9 @@ export default function ProductDetail() {
           </h1>
 
           <div className="flex items-center gap-4 mb-6">
-            <RatingStars rating={0} size={18} />
+            <RatingStars rating={ratingData?.average_rating || 0} size={18} />
             <span className="text-sm font-medium text-muted-foreground underline decoration-dashed underline-offset-4 cursor-pointer">
-              0 Reviews
+              {ratingData?.total_ratings || 0} Reviews
             </span>
             <span className="text-muted-foreground">|</span>
             <span className="text-sm font-medium text-emerald-500">
@@ -232,7 +251,7 @@ export default function ProductDetail() {
               value="reviews"
               className="text-base py-3 px-6 rounded-none border-b-2 border-transparent data-[state=active]:border-violet-500 data-[state=active]:bg-transparent data-[state=active]:shadow-none"
             >
-              Reviews (0)
+              Reviews ({ratingData?.total_ratings || 0})
             </TabsTrigger>
           </TabsList>
 
@@ -250,67 +269,101 @@ export default function ProductDetail() {
 
           <TabsContent value="reviews">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="md:col-span-1 border border-border p-6 rounded-2xl bg-card">
+              <div className="md:col-span-1 border border-border p-6 rounded-2xl bg-card h-fit">
                 <h3 className="font-semibold text-lg mb-4">Customer Reviews</h3>
                 <div className="flex items-center gap-4 mb-6">
-                  <div className="text-5xl font-bold">0</div>
+                  <div className="text-5xl font-bold">{ratingData?.average_rating || 0}</div>
                   <div className="flex flex-col gap-1">
-                    <RatingStars rating={0} />
+                    <RatingStars rating={ratingData?.average_rating || 0} />
                     <span className="text-sm text-muted-foreground">
-                      0 global ratings
+                      {ratingData?.total_ratings || 0} global ratings
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {[5, 4, 3, 2, 1].map((star) => (
-                    <div key={star} className="flex items-center gap-3">
+                <div className="space-y-3 mb-8">
+                  {ratingData?.breakdown?.map((item) => (
+                    <div key={item.stars} className="flex items-center gap-3">
                       <span className="text-sm font-medium w-12">
-                        {star} star
+                        {item.stars} star
                       </span>
                       <div className="flex-1 h-2.5 bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-amber-400 rounded-full"
+                          className="h-full bg-amber-400 rounded-full transition-all duration-500"
                           style={{
-                            width: `${star === 5 ? 70 : star === 4 ? 20 : star === 3 ? 5 : star === 2 ? 3 : 2}%`,
+                            width: `${item.percentage}%`,
                           }}
                         />
                       </div>
                     </div>
                   ))}
                 </div>
+
+                <Separator className="my-6" />
+
+                <h3 className="font-semibold text-lg mb-4">Write a Review</h3>
+                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Rating</label>
+                    <select 
+                      className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      value={reviewRating}
+                      onChange={(e) => setReviewRating(Number(e.target.value))}
+                    >
+                      <option value={5}>5 Stars - Excellent</option>
+                      <option value={4}>4 Stars - Very Good</option>
+                      <option value={3}>3 Stars - Average</option>
+                      <option value={2}>2 Stars - Poor</option>
+                      <option value={1}>1 Star - Terrible</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Comment</label>
+                    <textarea 
+                      className="w-full bg-background border border-input rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px]"
+                      placeholder="What did you like or dislike?"
+                      value={reviewComment}
+                      onChange={(e) => setReviewComment(e.target.value)}
+                      required
+                    ></textarea>
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isSubmittingReview}>
+                    {isSubmittingReview ? "Submitting..." : "Submit Review"}
+                  </Button>
+                </form>
               </div>
 
               <div className="md:col-span-2 space-y-6">
-                {[1, 2, 3].map((_, i) => (
-                  <div
-                    key={i}
-                    className="pb-6 border-b border-border last:border-0"
-                  >
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-semibold text-muted-foreground">
-                        JD
-                      </div>
-                      <div>
-                        <div className="font-semibold text-sm">John Doe</div>
-                        <div className="text-xs text-muted-foreground">
-                          Verified Purchase • 2 months ago
+                {!commentsData?.reviews?.length ? (
+                  <div className="text-center py-10 text-muted-foreground">
+                    No reviews yet. Be the first to review this product!
+                  </div>
+                ) : (
+                  commentsData.reviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className="pb-6 border-b border-border last:border-0"
+                    >
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-semibold text-muted-foreground">
+                          {review.user_id.substring(0, 2).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-sm">User {review.user_id.substring(0, 5)}</div>
+                          <div className="text-xs text-muted-foreground">
+                            Verified Purchase • {new Date(review.created_at).toLocaleDateString()}
+                          </div>
                         </div>
                       </div>
+                      <div className="mb-3">
+                        <RatingStars rating={review.rating} size={14} />
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        {review.comment}
+                      </p>
                     </div>
-                    <div className="mb-3">
-                      <RatingStars rating={5} size={14} />
-                    </div>
-                    <h4 className="font-semibold text-sm mb-2">
-                      Excellent product, highly recommended!
-                    </h4>
-                    <p className="text-sm text-muted-foreground">
-                      This is exactly what I was looking for. The quality is
-                      amazing and it arrived much faster than expected. I've
-                      been using it every day since I got it.
-                    </p>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
           </TabsContent>
