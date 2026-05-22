@@ -3,7 +3,6 @@ from typing import Optional
 
 class CreateReview(BaseModel):
     product_id: str = Field(...)
-    user_id: str = Field(...)
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
 
