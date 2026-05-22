@@ -6,7 +6,7 @@ from app.db.db import get_db
 from app.schema.review_schema import CreateReview, ReviewResponse, ReviewDelete, ReviewListResponse, ReviewUpdate, ProductRatingResponse, RatingBreakdown
 from app.model.review import Comment
 from shared.dependencies import get_current_user, TokenData
-import httpx
+
 
 router = APIRouter()
 
@@ -19,7 +19,7 @@ async def create_rating(
 ):
     # Check if user already reviewed this product
     existing_review = db.query(Comment).filter(
-        Comment.user_id == current_user.id,
+        Comment.user_id == current_user.user_id,
         Comment.product_id == product_id
     ).first()
     
@@ -27,7 +27,7 @@ async def create_rating(
         raise HTTPException(status_code=400, detail="User already reviewed this product")
     
     new_review = Comment(
-        user_id=current_user.id,
+        user_id=current_user.user_id,
         product_id=product_id,
         rating=review.rating,
         comment_text=review.comment
