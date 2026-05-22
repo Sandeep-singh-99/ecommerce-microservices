@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, EmailStr
 from typing import Optional
 
 class CreateReview(BaseModel):
-    product_id: str = Field(...)
+    product_id: Optional[str] = None
     rating: int = Field(..., ge=1, le=5)
     comment: Optional[str] = None
 
@@ -31,3 +31,13 @@ class ReviewDelete(BaseModel):
 class ReviewListResponse(BaseModel):
     reviews: list[ReviewResponse] = Field(...)
 
+class RatingBreakdown(BaseModel):
+    stars: int
+    count: int
+    percentage: float
+
+class ProductRatingResponse(BaseModel):
+    product_id: str
+    average_rating: float
+    total_ratings: int
+    breakdown: list[RatingBreakdown]
