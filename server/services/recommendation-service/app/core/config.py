@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     # External Services
     PRODUCT_SERVICE_URL: str = "http://product-service:8000/api/v1/products"
     
+    # AI Services
+    GOOGLE_API_KEY: str = ""
+    
     @property
     def sync_database_url(self) -> str:
         return f"postgresql://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

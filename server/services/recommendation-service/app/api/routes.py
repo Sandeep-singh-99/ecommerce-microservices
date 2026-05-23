@@ -8,9 +8,10 @@ from schemas.recommendation_schema import (
     RatingCreate, RatingResponse,
     RecommendationResponse
 )
-from services.recommendation_service import RecommendationService
-from services.user_behavior_service import UserBehaviorService
-from utils.logger import logger
+from app.services.recommendation_service import RecommendationService
+from app.services.user_behavior_service import UserBehaviorService
+from app.services.ai_recommendation_service import ai_recommendation_service
+from app.utils.logger import logger
 
 router = APIRouter()
 
@@ -29,6 +30,19 @@ async def get_user_recommendations(user_id: int, limit: int = 5, db: AsyncSessio
     except Exception as e:
         logger.error(f"Error fetching user recommendations: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
+
+@router.get("/recommendations/ai/{user_id}", response_model=List[RecommendationResponse], tags=["Recommendations"])
+async def get_ai_recommendations(user_id: int, db: AsyncSession = Depends(get_db)):
+    """
+    Get personalized product recommendations using AI (Gemini + LangGraph).
+    """
+    try:
+        recs = await ai_recommendation_service.get_ai_recommendations(user_id, db)
+        return recs
+    except Exception as e:
+        logger.error(f"Error fetching AI recommendations: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.get("/recommendations/product/{product_id}", response_model=List[RecommendationResponse], tags=["Recommendations"])
 async def get_product_recommendations(product_id: int, limit: int = 5, db: AsyncSession = Depends(get_db)):

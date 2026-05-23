@@ -21,7 +21,7 @@ app.add_middleware(
 )
 
 # Include routers
-app.include_router(router)
+app.include_router(router, prefix=settings.API_V1_STR)
 
 @app.on_event("startup")
 async def startup_event():
