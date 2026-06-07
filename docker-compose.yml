@@ -17,6 +17,8 @@ services:
         condition: service_healthy
       product-service:
         condition: service_healthy
+      cart-service:
+        condition: service_healthy
       # review-service:
       #    condition: service_healthy
     environment:
@@ -152,33 +154,33 @@ services:
   # Cart Service
   # ============================================
 
-  # cart-service:
-  #   build:
-  #     context: ./server
-  #     dockerfile: services/cart-service/Dockerfile
-  #   container_name: cart-service
-  #   expose:
-  #     - "8000"
-  #   env_file:
-  #     - ./server/.env
-  #   restart: unless-stopped
-  #   healthcheck:
-  #     test:
-  #       [
-  #         "CMD",
-  #         "python",
-  #         "-c",
-  #         "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
-  #       ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 3
-  #     start_period: 20s
+  cart-service:
+    build:
+      context: ./server
+      dockerfile: services/cart-service/Dockerfile
+    container_name: cart-service
+    expose:
+      - "8000"
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
 
-  #   volumes:
-  #     - ./server/services/cart-service/app:/app/app
-  #     - ./server/shared:/app/shared
-  #   command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+    volumes:
+      - ./server/services/cart-service/app:/app/app
+      - ./server/shared:/app/shared
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
 
   # ============================================
   # Client (React)
