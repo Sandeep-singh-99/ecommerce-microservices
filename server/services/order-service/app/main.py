@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.db.database import engine, Base
+from app.model.order import Order, OrderItem
 
 
 app = FastAPI(
@@ -17,6 +19,10 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
+@app.on_event("startup")
+async def on_startup():
+    print("Creating database tables...")
+    Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 async def read_root():
