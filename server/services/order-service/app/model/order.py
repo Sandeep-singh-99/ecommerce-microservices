@@ -23,6 +23,7 @@ class Order(Base):
     total_amount = Column(Numeric(10, 2), nullable=False) 
     
     payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
+    status = Column(String, default="pending", nullable=False)
     
     # Modern timezone-aware datetime
     created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))

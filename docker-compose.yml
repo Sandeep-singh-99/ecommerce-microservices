@@ -21,6 +21,11 @@ services:
         condition: service_healthy
       review-service:
          condition: service_healthy
+      order-service:
+         condition: service_healthy
+      payment-service:
+         condition: service_healthy
+
     environment:
       - TZ=UTC
     restart: unless-stopped
@@ -197,3 +202,68 @@ services:
     depends_on:
       - api-gateway
     restart: unless-stopped
+
+  # ============================================
+  # Order Service
+  # ============================================
+  order-service:
+    build:
+      context: ./server
+      dockerfile: services/order-service/Dockerfile
+    container_name: order-service
+    expose:
+      - "8000"
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - ./server/services/order-service/app:/app/app
+      - ./server/shared:/app/shared
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+    depends_on:
+      - redis
+
+  # ============================================
+  # Payment Service
+  # ============================================
+  payment-service:
+    build:
+      context: ./server
+      dockerfile: services/payment-service/Dockerfile
+    container_name: payment-service
+    expose:
+      - "8000"
+    env_file:
+      - ./server/.env
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    volumes:
+      - ./server/services/payment-service/app:/app/app
+      - ./server/shared:/app/shared
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --reload-dir /app/app
+    depends_on:
+      - redis
+

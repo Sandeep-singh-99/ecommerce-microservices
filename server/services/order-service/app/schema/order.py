@@ -41,6 +41,7 @@ class OrderResponse(OrderBase):
     id: str
     order_number: str
     payment_status: PaymentStatus
+    status: str
     created_at: datetime
     items: List[OrderItemResponse] 
 
@@ -48,4 +49,5 @@ class OrderResponse(OrderBase):
         from_attributes = True  
 
 class OrderStatusUpdate(BaseModel):
-    payment_status: PaymentStatus
+    status: Optional[str] = None
+    payment_status: Optional[PaymentStatus] = None
