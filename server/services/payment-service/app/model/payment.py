@@ -4,6 +4,8 @@ from datetime import datetime, timezone
 from uuid import uuid4
 import enum
 
+from app.db.db import Base
+
 class PaymentStatus(str, enum.Enum):
     PENDING = "pending"
     SUCCESS = "success"
