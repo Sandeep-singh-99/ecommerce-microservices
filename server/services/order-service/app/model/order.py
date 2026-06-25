@@ -9,38 +9,49 @@ from app.db.database import Base
 
 class PaymentStatus(str, enum.Enum):
     PENDING = "pending"
-    PAID = "paid"
-    FAILED = "failed"
+    CONFIRMED = "confirmed"
+    SHIPPED = "shipped"
+    DELIVERED = "delivered"
+    CANCELLED = "cancelled"
+
 
 class Order(Base):
     __tablename__ = "orders"
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
-    user_id = Column(String, nullable=False, index=True) # Indexed for faster user-order lookups
+    user_id = Column(
+        String, nullable=False, index=True
+    )  
     order_number = Column(String, unique=True, nullable=False, index=True)
-    
+
     # Use Numeric(precision, scale) for exact financial math
-    total_amount = Column(Numeric(10, 2), nullable=False) 
-    
+    total_amount = Column(Numeric(10, 2), nullable=False)
+
     payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
     status = Column(String, default="pending", nullable=False)
-    
-    # Modern timezone-aware datetime
-    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
-    items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
+    # Modern timezone-aware datetime
+    created_at = Column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    items = relationship(
+        "OrderItem", back_populates="order", cascade="all, delete-orphan"
+    )
 
 
 class OrderItem(Base):
     __tablename__ = "order_items"
 
     id = Column(String, primary_key=True, index=True, default=lambda: str(uuid4()))
-    order_id = Column(String, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False)
+    order_id = Column(
+        String, ForeignKey("orders.id", ondelete="CASCADE"), nullable=False
+    )
     product_id = Column(String, nullable=False)
-    
+
     product_name = Column(String, nullable=False)
     product_image = Column(String)
-    
+
     # Numeric for exact financial math
     price = Column(Numeric(10, 2), nullable=False)
     quantity = Column(Integer, nullable=False)
