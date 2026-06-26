@@ -1,16 +1,15 @@
 import os
 import httpx
 from dotenv import load_dotenv
+from fastapi import HTTPException
 
 load_dotenv()
 
 
 CASHFREE_CLIENT_ID = os.getenv("CASHFREE_APP_ID")
 CASHFREE_CLIENT_SECRET = os.getenv("CASHFREE_SECRET_KEY")
-CASHFREE_BASE_URL = os.getenv(
-    "CASHFREE_BASE_URL",
-    "https://sandbox.cashfree.com/pg"
-)
+CASHFREE_BASE_URL = os.getenv("CASHFREE_BASE_URL", "https://sandbox.cashfree.com/pg")
+
 
 async def create_cashfree_order(
     order_id: str,
@@ -28,23 +27,22 @@ async def create_cashfree_order(
             "customer_id": customer_id,
             "customer_name": customer_name,
             "customer_email": customer_email,
-            "customer_phone": customer_phone
-        }
+            "customer_phone": customer_phone,
+        },
     }
 
     headers = {
         "x-client-id": CASHFREE_CLIENT_ID,
         "x-client-secret": CASHFREE_CLIENT_SECRET,
         "x-api-version": "2025-01-01",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     async with httpx.AsyncClient() as client:
         response = await client.post(
-            f"{CASHFREE_BASE_URL}/orders",
-            json=payload,
-            headers=headers
+            f"{CASHFREE_BASE_URL}/orders", json=payload, headers=headers
         )
 
-    response.raise_for_status()
+    if response.status_code != 200:
+        raise HTTPException(status_code=response.status_code, detail=response.json())
     return response.json()

@@ -31,7 +31,7 @@ class Payment(Base):
 
     provider = Column(
         String,
-        default="dodo"
+        default="cashfree"
     )
 
     transaction_id = Column(
