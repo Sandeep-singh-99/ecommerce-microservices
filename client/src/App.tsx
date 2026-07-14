@@ -1,5 +1,5 @@
 import React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 import { Toaster } from "./components/ui/sonner";
 
 export default function App() {
@@ -7,6 +7,7 @@ export default function App() {
     <div>
       <Toaster />
       <Outlet />
+      <ScrollRestoration />
     </div>
   );
 }
