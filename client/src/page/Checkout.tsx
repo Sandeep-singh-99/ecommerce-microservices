@@ -1,34 +1,22 @@
-<<<<<<< HEAD
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, Banknote, ShieldCheck } from 'lucide-react';
-import { useAppSelector, useAppDispatch } from '@/hooks/hooks';
-import { clearCart } from '@/redux/slice/cartSlice';
-=======
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { CreditCard, Truck, ShieldCheck, Loader2 } from 'lucide-react';
-import { useAppSelector } from '@/hooks/hooks';
->>>>>>> c0c30c64d90d633a811b547cd8b559837a02520d
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-<<<<<<< HEAD
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { toast } from 'sonner';
-=======
-import { useCheckout } from '@/api/payment.api';
-import type { IOrderCreatePayload } from '@/types/order';
->>>>>>> c0c30c64d90d633a811b547cd8b559837a02520d
+  CreditCard,
+  Truck,
+  ShieldCheck,
+  Loader2,
+} from "lucide-react";
+
+import { useAppSelector } from "@/hooks/hooks";
+import { useCheckout } from "@/api/payment.api";
+import type { IOrderCreatePayload } from "@/types/order";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const getImageUrl = (product: any) => {
   if (product?.image?.url) return product.image.url;
@@ -37,6 +25,7 @@ const getImageUrl = (product: any) => {
     const first = product.images[0];
     if (typeof first === 'string') return first;
     if (first?.url) return first.url;
+    if (first?.image_url) return first.image_url;
   }
   return '/placeholder.png';
 };
@@ -49,36 +38,32 @@ export default function Checkout() {
   const { items } = useAppSelector((state) => state.cart);
   const checkoutMutation = useCheckout();
 
-<<<<<<< HEAD
-  const subtotal = (items || []).reduce((total, item) => total + (getItemPrice(item?.product) * (item?.quantity || 1)), 0);
-  const shipping = subtotal > 100 ? 0 : 15.00;
-=======
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    address: '',
-    address2: '',
-    city: '',
-    state: '',
-    zip: '',
-    email: '',
-    phone: '',
+    fullName: "",
+    country: "IN",
+    address: "",
+    address2: "",
+    city: "",
+    state: "",
+    zip: "",
+    email: "",
+    phone: "",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.id]: e.target.value,
-    }));
+    setFormData((prev) => ({ ...prev, [e.target.id]: e.target.value }));
   };
 
-  const subtotal = items.reduce(
-    (total, item) => total + item.product.price * item.quantity,
+  const handleCountryChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, country: value }));
+  };
+
+  const subtotal = (items || []).reduce(
+    (total, item) => total + getItemPrice(item?.product) * (item?.quantity || 1),
     0
   );
-  const shipping = subtotal > 100 ? 0 : 15.0;
->>>>>>> c0c30c64d90d633a811b547cd8b559837a02520d
-  const tax = subtotal * 0.08;
+  const shipping = subtotal > 1000 ? 0 : 99.0;
+  const tax = subtotal * 0.18;
   const total = subtotal + shipping + tax;
 
   const handlePlaceOrder = (e: React.FormEvent) => {
@@ -86,18 +71,18 @@ export default function Checkout() {
 
     const orderPayload: IOrderCreatePayload = {
       shipping_address: {
-        name: `${formData.firstName} ${formData.lastName}`.trim() || undefined,
+        name: formData.fullName.trim() || undefined,
         address_line1: formData.address,
         address_line2: formData.address2 || undefined,
         city: formData.city,
         state: formData.state,
         postal_code: formData.zip,
-        country: 'India',
+        country: formData.country,
         phone: formData.phone || undefined,
         email: formData.email || undefined,
       },
       items: items.map((item) => ({
-        product_id: item.product.id || item.id,
+        product_id: item.product?.id || item.id,
         quantity: item.quantity,
       })),
     };
@@ -133,47 +118,32 @@ export default function Checkout() {
             <CardContent className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-<<<<<<< HEAD
                   <Label htmlFor="fullName">Full Name</Label>
-                  <Input id="fullName" placeholder="John Doe" required />
+                  <Input
+                    id="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    placeholder="John Doe"
+                    required
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="country">Country</Label>
-                  <Select defaultValue="US">
+                  <Select value={formData.country} onValueChange={handleCountryChange}>
                     <SelectTrigger id="country" className="w-full">
                       <SelectValue placeholder="Select country" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="IN">India</SelectItem>
                       <SelectItem value="US">United States</SelectItem>
                       <SelectItem value="CA">Canada</SelectItem>
                       <SelectItem value="GB">United Kingdom</SelectItem>
                       <SelectItem value="AU">Australia</SelectItem>
-                      <SelectItem value="IN">India</SelectItem>
                       <SelectItem value="DE">Germany</SelectItem>
                       <SelectItem value="FR">France</SelectItem>
                       <SelectItem value="JP">Japan</SelectItem>
                     </SelectContent>
                   </Select>
-=======
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input
-                    id="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    placeholder="John"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input
-                    id="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    placeholder="Doe"
-                    required
-                  />
->>>>>>> c0c30c64d90d633a811b547cd8b559837a02520d
                 </div>
               </div>
               <div className="space-y-2">
@@ -285,8 +255,7 @@ export default function Checkout() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
-<<<<<<< HEAD
-                {items.map(item => {
+                {items.map((item) => {
                   const price = getItemPrice(item?.product);
                   const imageUrl = getImageUrl(item?.product);
                   const name = item?.product?.name || "Product";
@@ -300,35 +269,11 @@ export default function Checkout() {
                         <p className="text-muted-foreground">Qty: {item.quantity}</p>
                       </div>
                       <div className="font-medium text-sm">
-                        ${(price * item.quantity).toFixed(2)}
+                        ₹{(price * item.quantity).toFixed(2)}
                       </div>
                     </div>
                   );
                 })}
-=======
-                {items.map((item) => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="w-16 h-16 rounded overflow-hidden bg-muted/20 shrink-0 border border-border">
-                      <img
-                        src={
-                          typeof item.product.images?.[0] === 'string'
-                            ? item.product.images[0]
-                            : (item.product.images?.[0] as any)?.image_url || '/placeholder.png'
-                        }
-                        alt={item.product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 text-sm">
-                      <h4 className="font-medium line-clamp-2 mb-1">{item.product.name}</h4>
-                      <p className="text-muted-foreground">Qty: {item.quantity}</p>
-                    </div>
-                    <div className="font-medium text-sm">
-                      ₹{(item.product.price * item.quantity).toFixed(2)}
-                    </div>
-                  </div>
-                ))}
->>>>>>> c0c30c64d90d633a811b547cd8b559837a02520d
               </div>
 
               <Separator className="my-4" />
@@ -339,7 +284,7 @@ export default function Checkout() {
                   <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
-                  <span>Tax (8%)</span>
+                  <span>GST / Tax (18%)</span>
                   <span>₹{tax.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground">
@@ -371,7 +316,7 @@ export default function Checkout() {
                     Redirecting to Secure Payment...
                   </>
                 ) : (
-                  'Proceed to Checkout'
+                  "Proceed to Checkout"
                 )}
               </Button>
 

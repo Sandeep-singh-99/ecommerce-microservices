@@ -39,6 +39,22 @@ class Order(Base):
     shipping_phone = Column(String)
     shipping_email = Column(String)
 
+    @property
+    def shipping_address(self) -> dict | None:
+        if not (self.shipping_address1 or self.shipping_name):
+            return None
+        return {
+            "name": self.shipping_name,
+            "address_line1": self.shipping_address1 or "",
+            "address_line2": None,
+            "city": self.shipping_city or "",
+            "state": self.shipping_state or "",
+            "postal_code": self.shipping_postal_code or "",
+            "country": self.shipping_country or "India",
+            "phone": self.shipping_phone,
+            "email": self.shipping_email,
+        }
+
     # Modern timezone-aware datetime
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

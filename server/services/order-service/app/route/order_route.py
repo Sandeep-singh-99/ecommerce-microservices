@@ -102,13 +102,22 @@ async def create_order(
     order_number = generate_order_number()
 
     # 3. Create Order database record inside a transaction
+    sa = order_data.shipping_address
     try:
         new_order = Order(
             user_id=current_user.user_id,
             order_number=order_number,
             total_amount=total_amount,
             payment_status=PaymentStatus.PENDING,
-            status="pending"
+            status="pending",
+            shipping_name=sa.name if sa else None,
+            shipping_address1=sa.address_line1 if sa else None,
+            shipping_city=sa.city if sa else None,
+            shipping_state=sa.state if sa else None,
+            shipping_postal_code=sa.postal_code if sa else None,
+            shipping_country=sa.country if sa else "India",
+            shipping_phone=sa.phone if sa else None,
+            shipping_email=sa.email if sa else None,
         )
         db.add(new_order)
         db.flush()  # Populates new_order.id
@@ -139,15 +148,16 @@ async def create_order(
         )
 
     # 4. Initiate Payment with Payment Service
-    cust_name = order_data.shipping_address.name if order_data.shipping_address else current_user.email
-    cust_phone = order_data.shipping_address.phone if order_data.shipping_address else "9999999999"
+    cust_name = (sa.name if (sa and sa.name) else None) or current_user.email
+    cust_phone = (sa.phone if (sa and sa.phone) else None) or "9999999999"
+    cust_email = (sa.email if (sa and sa.email) else None) or current_user.email
 
     payment_payload = {
         "order_id": new_order.id,
         "user_id": current_user.user_id,
         "amount": float(total_amount),
         "customer_name": cust_name,
-        "customer_email": current_user.email,
+        "customer_email": cust_email,
         "customer_phone": cust_phone
     }
 

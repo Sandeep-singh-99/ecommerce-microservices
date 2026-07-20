@@ -63,6 +63,15 @@ class OrderResponse(BaseModel):
     total_amount: Decimal
     payment_status: str
     status: str
+    shipping_name: Optional[str] = None
+    shipping_address1: Optional[str] = None
+    shipping_city: Optional[str] = None
+    shipping_state: Optional[str] = None
+    shipping_postal_code: Optional[str] = None
+    shipping_country: Optional[str] = None
+    shipping_phone: Optional[str] = None
+    shipping_email: Optional[str] = None
+    shipping_address: Optional[ShippingAddress] = None
     created_at: datetime
     items: List[OrderItemResponse]
 
