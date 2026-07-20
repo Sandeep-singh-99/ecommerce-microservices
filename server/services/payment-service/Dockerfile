@@ -1,21 +1,27 @@
-FROM node:22
+FROM python:3.13-slim
 
-# Set working directory inside the container
+# 1. Pull the uv binary directly from Astral's official image
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# 2. Configure uv for a Docker environment
+ENV UV_SYSTEM_PYTHON=1
+ENV UV_COMPILE_BYTECODE=1
+
 WORKDIR /app
 
-# Copy package files and install dependencies
-# Note: Path is relative to the build context (./server)
-COPY services/payment-service/package*.json ./
-RUN npm install
+# 3. Copy dependency files FIRST
+COPY services/payment-service/requirements.txt .
 
-# Copy the rest of the application code
-COPY services/payment-service/ .
+# 4. Install dependencies
+RUN uv pip install --no-cache -r requirements.txt
 
-# Generate Prisma Client for container binaryTarget
-RUN npx prisma generate
+# 5. Copy shared utilities and app code
+COPY shared ./shared
+COPY services/payment-service/app ./app
+COPY services/payment-service/alembic ./alembic
+COPY services/payment-service/alembic.ini ./alembic.ini
 
-# Expose the port your app runs on
 EXPOSE 5000
 
-# Start the server
-CMD ["node", "server.js"]
+# 6. Run the application
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "5000", "--reload"]

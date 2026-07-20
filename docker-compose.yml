@@ -235,16 +235,23 @@ services:
     env_file:
       - ./server/.env
     restart: unless-stopped
-    volumes:
-      - ./server/services/payment-service:/app
-      - /app/node_modules
-    command: sh -c "npx prisma generate && npx nodemon --exec ts-node src/server.ts"
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5000/health"]
-      interval: 10s
-      timeout: 5s
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')",
+        ]
+      interval: 30s
+      timeout: 10s
       retries: 3
-      start_period: 10s
+      start_period: 20s
+
+    volumes:
+      - ./server/services/payment-service/app:/app/app
+      - ./server/shared:/app/shared
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 5000 --reload --reload-dir /app/app"
 
   # ============================================
   # Client (React)
