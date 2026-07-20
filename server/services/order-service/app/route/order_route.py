@@ -1,3 +1,340 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from typing import List, Optional
+from datetime import datetime
+import uuid
+import logging
+from decimal import Decimal
+
 from app.db.database import get_db
-from app.model.order import Order, OrderItem
+from app.model.order import Order, OrderItem, PaymentStatus
+from app.schema.order import (
+    OrderCreate,
+    OrderResponse,
+    OrderCreateResponse,
+    OrderStatusUpdate,
+    PaymentStatusCallback,
+)
+from app.core.http_client import ServiceHTTPClient
+from shared.dependencies import get_current_user, TokenData
+
+logger = logging.getLogger("order_service")
+
+router = APIRouter()
+
+
+def generate_order_number() -> str:
+    today_str = datetime.utcnow().strftime("%Y%m%d")
+    unique_suffix = uuid.uuid4().hex[:6].upper()
+    return f"ORD-{today_str}-{unique_suffix}"
+
+
+@router.post(
+    "",
+    response_model=OrderCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create Order and Initiate Payment",
+    description="Validates product pricing from Product Service, creates Order and OrderItems, and calls Payment Service."
+)
+@router.post(
+    "/",
+    response_model=OrderCreateResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False
+)
+async def create_order(
+    order_data: OrderCreate,
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    if not current_user.user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="User identity could not be verified from token"
+        )
+
+    if not order_data.items:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Order must contain at least one item"
+        )
+
+    # 1. Fetch & validate products from Product Service (Never trust frontend price)
+    validated_items = []
+    total_amount = Decimal("0.00")
+
+    for item in order_data.items:
+        product = await ServiceHTTPClient.fetch_product_details(item.product_id)
+        if not product:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Product with ID '{item.product_id}' not found or unavailable"
+            )
+
+        # Extract real price from product service
+        sales_price = Decimal(str(product.get("sales_price") or product.get("product_price", 0)))
+        if sales_price <= 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid pricing for product '{product.get('product_name')}'"
+            )
+
+        # Extract primary image URL if available
+        product_image = None
+        images = product.get("images", [])
+        if images:
+            primary_img = next((img.get("image_url") for img in images if img.get("is_primary")), None)
+            product_image = primary_img or images[0].get("image_url")
+
+        subtotal = sales_price * item.quantity
+        total_amount += subtotal
+
+        validated_items.append({
+            "product_id": item.product_id,
+            "product_name": product.get("product_name", "Unknown Product"),
+            "product_image": product_image,
+            "price": sales_price,
+            "quantity": item.quantity,
+            "subtotal": subtotal
+        })
+
+    # 2. Generate unique order number
+    order_number = generate_order_number()
+
+    # 3. Create Order database record inside a transaction
+    try:
+        new_order = Order(
+            user_id=current_user.user_id,
+            order_number=order_number,
+            total_amount=total_amount,
+            payment_status=PaymentStatus.PENDING,
+            status="pending"
+        )
+        db.add(new_order)
+        db.flush()  # Populates new_order.id
+
+        # Create OrderItem records
+        for v_item in validated_items:
+            order_item = OrderItem(
+                order_id=new_order.id,
+                product_id=v_item["product_id"],
+                product_name=v_item["product_name"],
+                product_image=v_item["product_image"],
+                price=v_item["price"],
+                quantity=v_item["quantity"],
+                subtotal=v_item["subtotal"]
+            )
+            db.add(order_item)
+
+        db.commit()
+        db.refresh(new_order)
+        logger.info(f"Order created successfully: id={new_order.id}, order_number={order_number}")
+
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to create order transaction: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to save order to database"
+        )
+
+    # 4. Initiate Payment with Payment Service
+    cust_name = order_data.shipping_address.name if order_data.shipping_address else current_user.email
+    cust_phone = order_data.shipping_address.phone if order_data.shipping_address else "9999999999"
+
+    payment_payload = {
+        "order_id": new_order.id,
+        "user_id": current_user.user_id,
+        "amount": float(total_amount),
+        "customer_name": cust_name,
+        "customer_email": current_user.email,
+        "customer_phone": cust_phone
+    }
+
+    payment_response = await ServiceHTTPClient.create_payment_order(payment_payload)
+
+    payment_session_id = payment_response.get("payment_session_id")
+    payment_link = payment_response.get("payment_link")
+
+    return OrderCreateResponse(
+        message="Order created successfully",
+        order=new_order,
+        payment_session_id=payment_session_id,
+        payment_link=payment_link
+    )
+
+
+@router.get(
+    "",
+    response_model=List[OrderResponse],
+    summary="Get User Orders",
+    description="Retrieve all orders for the currently logged-in user."
+)
+@router.get(
+    "/",
+    response_model=List[OrderResponse],
+    include_in_schema=False
+)
+async def get_orders(
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    orders = db.query(Order).filter(Order.user_id == current_user.user_id).order_by(Order.created_at.desc()).all()
+    return orders
+
+
+@router.get(
+    "/admin",
+    response_model=List[OrderResponse],
+    summary="Admin: Get All Orders",
+    description="Retrieve all system orders (Admin role required)."
+)
+async def get_admin_orders(
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    if current_user.role != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+
+    orders = db.query(Order).order_by(Order.created_at.desc()).all()
+    return orders
+
+
+@router.get(
+    "/user/{user_id}",
+    response_model=List[OrderResponse],
+    summary="Get Orders By User ID",
+    description="Fetch orders for a specific user ID."
+)
+async def get_orders_by_user_id(
+    user_id: str,
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    # Allow user to view their own orders, or admin to view any user's orders
+    if current_user.user_id != user_id and current_user.role != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+
+    orders = db.query(Order).filter(Order.user_id == user_id).order_by(Order.created_at.desc()).all()
+    return orders
+
+
+@router.get(
+    "/{id}",
+    response_model=OrderResponse,
+    summary="Get Order Details By Order ID",
+    description="Fetch single order details."
+)
+async def get_order_by_id(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    order = db.query(Order).filter(Order.id == id).first()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    if order.user_id != current_user.user_id and current_user.role != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+
+    return order
+
+
+@router.patch(
+    "/{id}/payment-status",
+    response_model=OrderResponse,
+    summary="Update Order Payment Status (Callback)",
+    description="Invoked by Payment Service to update order status upon Cashfree payment verification."
+)
+async def update_payment_status(
+    id: str,
+    payload: PaymentStatusCallback,
+    db: Session = Depends(get_db)
+):
+    order = db.query(Order).filter(Order.id == id).first()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    status_str = payload.status.upper() if payload.status else ""
+
+    if status_str == "SUCCESS" or status_str == "CONFIRMED":
+        order.payment_status = PaymentStatus.CONFIRMED
+        order.status = "confirmed"
+    else:
+        order.payment_status = PaymentStatus.PENDING
+        order.status = "payment_failed"
+
+    try:
+        db.commit()
+        db.refresh(order)
+        logger.info(f"Order payment status updated: id={id}, new_status={order.status}, payment_status={order.payment_status}")
+        return order
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to update payment status for order_id={id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to update order payment status"
+        )
+
+
+@router.patch(
+    "/{id}/cancel",
+    response_model=OrderResponse,
+    summary="Cancel Order",
+    description="Cancel an existing pending order."
+)
+async def cancel_order(
+    id: str,
+    db: Session = Depends(get_db),
+    current_user: TokenData = Depends(get_current_user)
+):
+    order = db.query(Order).filter(Order.id == id).first()
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found"
+        )
+
+    if order.user_id != current_user.user_id and current_user.role != "ADMIN":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        )
+
+    if order.status in ("shipped", "delivered"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot cancel order that has already been shipped or delivered"
+        )
+
+    order.status = "cancelled"
+    order.payment_status = PaymentStatus.CANCELLED
+
+    try:
+        db.commit()
+        db.refresh(order)
+        logger.info(f"Order cancelled: id={id}")
+        return order
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Failed to cancel order_id={id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to cancel order"
+        )

@@ -301,4 +301,21 @@ async def clear_cart(
     # Invalidate user's cart cache
     redis_client.delete(f"cart:{current_user.user_id}")
 
-    return {"message": "Cart cleared"}
+    return {"message": "Cart cleared"}
+
+
+@router.delete("/user/{user_id}")
+@router.delete("/cart/user/{user_id}")
+async def clear_user_cart_by_id(
+    user_id: str,
+    db: Session = Depends(get_db),
+):
+    db.query(Cart).filter(Cart.user_id == user_id).delete()
+    db.commit()
+
+    try:
+        redis_client.delete(f"cart:{user_id}")
+    except Exception as e:
+        print(f"Redis delete error: {e}")
+
+    return {"message": f"Cart cleared for user {user_id}"}
