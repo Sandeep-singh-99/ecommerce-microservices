@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CreditCard, Truck, Banknote, ShieldCheck } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '@/hooks/hooks';
@@ -9,7 +9,29 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
+
+const getImageUrl = (product: any) => {
+  if (product?.image?.url) return product.image.url;
+  if (typeof product?.image === 'string') return product.image;
+  if (Array.isArray(product?.images) && product.images.length > 0) {
+    const first = product.images[0];
+    if (typeof first === 'string') return first;
+    if (first?.url) return first.url;
+  }
+  return '/placeholder.png';
+};
+
+const getItemPrice = (product: any) => {
+  return product?.sales_price ?? product?.price ?? 0;
+};
 
 export default function Checkout() {
   const { items } = useAppSelector(state => state.cart);
@@ -18,7 +40,7 @@ export default function Checkout() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('card');
 
-  const subtotal = items.reduce((total, item) => total + (item.product.price * item.quantity), 0);
+  const subtotal = (items || []).reduce((total, item) => total + (getItemPrice(item?.product) * (item?.quantity || 1)), 0);
   const shipping = subtotal > 100 ? 0 : 15.00;
   const tax = subtotal * 0.08;
   const total = subtotal + shipping + tax;
@@ -36,7 +58,7 @@ export default function Checkout() {
     }, 2000);
   };
 
-  if (items.length === 0) {
+  if (!items || items.length === 0) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-2xl font-bold mb-4">Checkout not available</h1>
@@ -62,12 +84,26 @@ export default function Checkout() {
             <CardContent className="p-6 space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
-                  <Input id="firstName" placeholder="John" required />
+                  <Label htmlFor="fullName">Full Name</Label>
+                  <Input id="fullName" placeholder="John Doe" required />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
-                  <Input id="lastName" placeholder="Doe" required />
+                  <Label htmlFor="country">Country</Label>
+                  <Select defaultValue="US">
+                    <SelectTrigger id="country" className="w-full">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="US">United States</SelectItem>
+                      <SelectItem value="CA">Canada</SelectItem>
+                      <SelectItem value="GB">United Kingdom</SelectItem>
+                      <SelectItem value="AU">Australia</SelectItem>
+                      <SelectItem value="IN">India</SelectItem>
+                      <SelectItem value="DE">Germany</SelectItem>
+                      <SelectItem value="FR">France</SelectItem>
+                      <SelectItem value="JP">Japan</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
@@ -160,20 +196,25 @@ export default function Checkout() {
             </CardHeader>
             <CardContent className="p-6">
               <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2">
-                {items.map(item => (
-                  <div key={item.id} className="flex gap-4">
-                    <div className="w-16 h-16 rounded overflow-hidden bg-muted/20 shrink-0 border border-border">
-                      <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                {items.map(item => {
+                  const price = getItemPrice(item?.product);
+                  const imageUrl = getImageUrl(item?.product);
+                  const name = item?.product?.name || "Product";
+                  return (
+                    <div key={item.id || item?.product?.id} className="flex gap-4">
+                      <div className="w-16 h-16 rounded overflow-hidden bg-muted/20 shrink-0 border border-border">
+                        <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 text-sm">
+                        <h4 className="font-medium line-clamp-2 mb-1">{name}</h4>
+                        <p className="text-muted-foreground">Qty: {item.quantity}</p>
+                      </div>
+                      <div className="font-medium text-sm">
+                        ${(price * item.quantity).toFixed(2)}
+                      </div>
                     </div>
-                    <div className="flex-1 text-sm">
-                      <h4 className="font-medium line-clamp-2 mb-1">{item.product.name}</h4>
-                      <p className="text-muted-foreground">Qty: {item.quantity}</p>
-                    </div>
-                    <div className="font-medium text-sm">
-                      ${(item.product.price * item.quantity).toFixed(2)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               <Separator className="my-4" />

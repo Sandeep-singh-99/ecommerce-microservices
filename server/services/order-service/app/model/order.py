@@ -30,6 +30,15 @@ class Order(Base):
     payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.PENDING)
     status = Column(String, default="pending", nullable=False)
 
+    shipping_name = Column(String)
+    shipping_address1 = Column(String)
+    shipping_city = Column(String)
+    shipping_state = Column(String)
+    shipping_postal_code = Column(String)
+    shipping_country = Column(String)
+    shipping_phone = Column(String)
+    shipping_email = Column(String)
+
     # Modern timezone-aware datetime
     created_at = Column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)

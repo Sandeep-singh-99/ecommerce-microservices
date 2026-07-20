@@ -20,11 +20,13 @@ import Dashboard from "@/page/admin/Dashboard";
 import AdminProducts from "@/page/admin/AdminProducts";
 import AdminOrders from "@/page/admin/AdminOrders";
 import AdminUsers from "@/page/admin/AdminUsers";
+import ErrorElement from "@/components/ErrorElement";
 
 export const router = createBrowserRouter([
     {
         path: "/",
         element: <App />,
+        errorElement: <ErrorElement />,
         children: [
             // Public Routes with MainLayout
             {
