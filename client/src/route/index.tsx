@@ -10,6 +10,8 @@ import ProductDetail from "@/page/ProductDetail";
 import CategoryProducts from "@/page/CategoryProducts";
 import Cart from "@/page/Cart";
 import Checkout from "@/page/Checkout";
+import PaymentSuccess from "@/page/PaymentSuccess";
+import PaymentFailed from "@/page/PaymentFailed";
 import Login from "@/page/Login";
 import Register from "@/page/Register";
 import NotFound from "@/page/NotFound";
@@ -53,6 +55,18 @@ export const router = createBrowserRouter([
                     {
                         path: "checkout",
                         element: <Checkout />
+                    },
+                    {
+                        path: "payment/success",
+                        element: <PaymentSuccess />
+                    },
+                    {
+                        path: "payment/failed",
+                        element: <PaymentFailed />
+                    },
+                    {
+                        path: "order-confirmation",
+                        element: <PaymentSuccess />
                     },
                     {
                         path: "project",
