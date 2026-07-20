@@ -5,19 +5,40 @@ from decimal import Decimal
 from enum import Enum
 
 
-class PaymentStatus(str, Enum):
+class PaymentStatusEnum(str, Enum):
     PENDING = "pending"
-    PAID = "paid"
+    CONFIRMED = "confirmed"
+    SHIPPED = "shipped"
+    DELIVERED = "delivered"
+    CANCELLED = "cancelled"
     FAILED = "failed"
+
+
+class ShippingAddress(BaseModel):
+    name: Optional[str] = Field(None, description="Full Name of the recipient")
+    address_line1: str = Field(..., description="Street address line 1")
+    address_line2: Optional[str] = Field(None, description="Apartment, suite, etc.")
+    city: str = Field(..., description="City")
+    state: str = Field(..., description="State or Region")
+    postal_code: str = Field(..., description="ZIP / Postal Code")
+    country: str = Field("India", description="Country")
+    phone: Optional[str] = Field(None, description="Phone number for delivery")
+    email: Optional[str] = Field(None, description="Email address for notifications")
+
+
+class OrderItemInput(BaseModel):
+    product_id: str = Field(..., description="ID of the product being purchased")
+    quantity: int = Field(..., gt=0, description="Quantity of items")
 
 
 class OrderItemBase(BaseModel):
     product_id: str
     product_name: str
     product_image: Optional[str] = None
-    price: Decimal = Field(..., gt=0)  # Price must be greater than 0
-    quantity: int = Field(..., gt=0)  # Quantity must be greater than
-    subtotal: Decimal = Field(..., gt=0)  # Subtotal must be greater than 0
+    price: Decimal = Field(..., gt=0)
+    quantity: int = Field(..., gt=0)
+    subtotal: Decimal = Field(..., gt=0)
+
 
 class OrderItemCreate(OrderItemBase):
     pass
@@ -26,28 +47,40 @@ class OrderItemCreate(OrderItemBase):
 class OrderItemResponse(OrderItemBase):
     id: str
     order_id: str
-    class config:
-        from_attributes = True
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-class OrderBase(BaseModel):
-    user_id: int
-    total_amount: Decimal = Field(..., max_digits=10, decimal_places=2)
+class OrderCreate(BaseModel):
+    shipping_address: Optional[ShippingAddress] = None
+    items: List[OrderItemInput] = Field(..., min_items=1, description="List of products to order")
 
-class OrderCreate(OrderBase):
-    items: List[OrderItemCreate]
 
-class OrderResponse(OrderBase):
+class OrderResponse(BaseModel):
     id: str
+    user_id: str
     order_number: str
-    payment_status: PaymentStatus
+    total_amount: Decimal
+    payment_status: str
     status: str
     created_at: datetime
-    items: List[OrderItemResponse] 
+    items: List[OrderItemResponse]
 
-    class config:
-        from_attributes = True  
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OrderCreateResponse(BaseModel):
+    message: str
+    order: OrderResponse
+    payment_session_id: Optional[str] = None
+    payment_link: Optional[str] = None
+
 
 class OrderStatusUpdate(BaseModel):
     status: Optional[str] = None
-    payment_status: Optional[PaymentStatus] = None
+    payment_status: Optional[str] = None
+
+
+class PaymentStatusCallback(BaseModel):
+    status: str = Field(..., description="SUCCESS or FAILED from Payment Gateway/Webhook")
+    transaction_id: Optional[str] = None

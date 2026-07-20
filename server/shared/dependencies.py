@@ -15,8 +15,12 @@ class TokenData(BaseModel):
 
 # 2. The Shared Dependency (No Database Required!)
 def get_current_user(request: Request) -> TokenData:
-    # Extract the token from the cookie
+    # Extract the token from the cookie or Authorization header
     token = request.cookies.get("access_token")
+    if not token:
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
     
     if not token:
         raise HTTPException(
@@ -27,6 +31,11 @@ def get_current_user(request: Request) -> TokenData:
     try:
         # Decode the token
         payload = decode_access_token(token)
+        if not payload:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Invalid token"
+            )
         email = payload.get("sub")
         
         if not email:
@@ -35,9 +44,12 @@ def get_current_user(request: Request) -> TokenData:
                 detail="Invalid token structure"
             )
             
-        # Return the Pydantic schema, NOT the database model
-        return TokenData(email=email, role=payload.get("role"), user_id=payload.get("id"))
+        # Return the Pydantic schema
+        user_id = str(payload.get("id") or payload.get("user_id") or "")
+        return TokenData(email=email, role=payload.get("role", "USER"), user_id=user_id)
         
+    except HTTPException:
+        raise
     except Exception:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
