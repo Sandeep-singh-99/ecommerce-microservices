@@ -67,6 +67,28 @@ class CashfreeClient:
                     "payment_link": payment_link,
                     "order_status": data.get("order_status", "ACTIVE"),
                 }
+            elif response.status_code == 409:
+                logger.info(f"[Cashfree] Order {order_id} already exists on Cashfree. Fetching existing details...")
+                get_url = f"{CASHFREE_BASE_URL}/orders/{order_id}"
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    get_response = await client.get(get_url, headers=headers)
+                
+                if get_response.status_code == 200:
+                    get_data = get_response.json()
+                    payment_session_id = get_data.get("payment_session_id") or f"session_{order_id}"
+                    payment_link = get_data.get("payment_link") or f"https://sandbox.cashfree.com/pg/orders/{payment_session_id}"
+                    cf_order_id = str(get_data.get("cf_order_id", order_id))
+                    
+                    return {
+                        "payment_session_id": payment_session_id,
+                        "cf_order_id": cf_order_id,
+                        "payment_link": payment_link,
+                        "order_status": get_data.get("order_status", "ACTIVE"),
+                    }
+                else:
+                    logger.warning(
+                        f"[Cashfree] Failed to retrieve existing order {order_id} details (status {get_response.status_code}): {get_response.text}"
+                    )
             else:
                 logger.warning(
                     f"[Cashfree] API returned status {response.status_code}: {response.text}"

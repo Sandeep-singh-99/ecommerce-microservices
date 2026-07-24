@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 import uuid
 import logging
 from decimal import Decimal
@@ -59,7 +59,86 @@ async def create_order(
             detail="Order must contain at least one item"
         )
 
-    # 1. Fetch & validate products from Product Service (Never trust frontend price)
+    # 0. Clean up stale pending orders (older than 15 minutes) for this user to avoid build-up
+    expiry_threshold = datetime.now(timezone.utc) - timedelta(minutes=15)
+    try:
+        stale_orders = db.query(Order).filter(
+            Order.user_id == current_user.user_id,
+            Order.status == "pending",
+            Order.payment_status == PaymentStatus.PENDING,
+            Order.created_at < expiry_threshold
+        ).all()
+        for stale_order in stale_orders:
+            stale_order.status = "cancelled"
+            stale_order.payment_status = PaymentStatus.CANCELLED
+        if stale_orders:
+            db.commit()
+            logger.info(f"Cancelled {len(stale_orders)} stale pending orders for user {current_user.user_id}")
+    except Exception as cleanup_err:
+        db.rollback()
+        logger.error(f"Error cleaning up stale pending orders: {cleanup_err}")
+
+    # 1. Check if there's a recent pending order (created within last 15 minutes)
+    # with the exact same items (product_id and quantity)
+    recent_order = db.query(Order).filter(
+        Order.user_id == current_user.user_id,
+        Order.status == "pending",
+        Order.payment_status == PaymentStatus.PENDING,
+        Order.created_at >= expiry_threshold
+    ).order_by(Order.created_at.desc()).first()
+
+    if recent_order:
+        existing_items = {item.product_id: item.quantity for item in recent_order.items}
+        new_items = {item.product_id: item.quantity for item in order_data.items}
+        
+        if existing_items == new_items:
+            logger.info(f"Reusing recent pending order: id={recent_order.id}, order_number={recent_order.order_number}")
+            
+            # Update shipping address if provided
+            sa = order_data.shipping_address
+            if sa:
+                recent_order.shipping_name = sa.name if sa.name else recent_order.shipping_name
+                recent_order.shipping_address1 = sa.address_line1 if sa.address_line1 else recent_order.shipping_address1
+                recent_order.shipping_city = sa.city if sa.city else recent_order.shipping_city
+                recent_order.shipping_state = sa.state if sa.state else recent_order.shipping_state
+                recent_order.shipping_postal_code = sa.postal_code if sa.postal_code else recent_order.shipping_postal_code
+                recent_order.shipping_country = sa.country if sa.country else recent_order.shipping_country
+                recent_order.shipping_phone = sa.phone if sa.phone else recent_order.shipping_phone
+                recent_order.shipping_email = sa.email if sa.email else recent_order.shipping_email
+                
+            try:
+                db.commit()
+                db.refresh(recent_order)
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Failed to update shipping address for reused order: {e}")
+                
+            # Request payment link/session from payment service
+            cust_name = (sa.name if (sa and sa.name) else None) or current_user.email
+            cust_phone = (sa.phone if (sa and sa.phone) else None) or "9999999999"
+            cust_email = (sa.email if (sa and sa.email) else None) or current_user.email
+            
+            payment_payload = {
+                "order_id": recent_order.id,
+                "user_id": current_user.user_id,
+                "amount": float(recent_order.total_amount),
+                "customer_name": cust_name,
+                "customer_email": cust_email,
+                "customer_phone": cust_phone
+            }
+            
+            payment_response = await ServiceHTTPClient.create_payment_order(payment_payload)
+            payment_session_id = payment_response.get("payment_session_id")
+            payment_link = payment_response.get("payment_link")
+            
+            return OrderCreateResponse(
+                message="Checkout resumed for existing pending order",
+                order=recent_order,
+                payment_session_id=payment_session_id,
+                payment_link=payment_link
+            )
+
+    # 2. Fetch & validate products from Product Service (Never trust frontend price)
     validated_items = []
     total_amount = Decimal("0.00")
 
